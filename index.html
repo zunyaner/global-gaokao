@@ -4,8 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0908" />
-  <title>全球大型高危险性统一考试</title>
-<link rel="icon" href="data:,">
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="全球高考" />
+  <meta name="description" content="向木苏里《全球高考》致敬的同人互动：收音机响起，北京时间十七时三十分，考生入场。不及格者，将从系统中移除。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="全球高考 · 同人互动" />
+  <meta property="og:title" content="全球高考 · 全球大型高危险性统一考试" />
+  <meta property="og:description" content="现在是北京时间十七时三十分。考场 003712，科目：物理。不及格者，将从系统中移除。" />
+  <meta property="og:image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://zunyaner.github.io/global-gaokao/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="全球高考 · 全球大型高危险性统一考试" />
+  <meta name="twitter:image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <meta itemprop="name" content="全球高考 · 同人互动" />
+  <meta itemprop="image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <title>全球高考 · 全球大型高危险性统一考试</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -153,20 +174,44 @@
       <div class="intro-skip" aria-hidden="true">点击任意处 / 按任意键跳过</div>
     </div>
 
-    <div id="screen-ticket" class="overlay hidden">
-      <div class="ticket">
-        <h2>准　考　证</h2>
-        <div class="row"><span>考试名称</span><span>全球大型高危险性统一考试</span></div>
-        <div class="row"><span>考生姓名</span><input id="name-in" maxlength="8" placeholder="填写真实姓名" /></div>
-        <div class="row"><span>准考证号</span><span id="ticket-no">——</span></div>
-        <div class="row"><span>身份</span><span>考生 · 真身入场</span></div>
-        <div class="row"><span>科目安排</span><span>3 + 1 + 1（物理 / 外语 / 历史 / 数学 / 语文）</span></div>
-        <div class="seal">准考</div>
-        <div class="btns" style="margin-top:22px">
-          <button class="btn red" id="btn-enter">确认入场</button>
-          <button class="btn ghost dark" id="btn-back">返回</button>
+    <!-- 开场影片：夜车 → 电流 → 准考证落入掌心（就地填写姓名）→ 广播 → 雪夜推镜 → 考场门牌 -->
+    <div id="film" class="film hidden" data-phase="">
+      <div class="f-cam">
+        <div class="f-world">
+          <div class="f-city"><div class="f-strip f-far"></div><div class="f-strip f-near"></div></div>
+          <div class="f-bokeh" id="f-bokeh"></div>
+          <div class="f-refl"></div>
+        </div>
+        <div class="f-interior" id="f-interior"></div>
+        <div class="f-sweep"></div>
+        <div class="f-radio" id="f-radio">
+          <div class="f-lcd"><b id="f-freq">FM 97.3</b><span id="f-lcd2">交通台 · 17:29</span></div>
+          <i class="f-knob"></i><i class="f-knob k2"></i>
+          <span class="f-btnrow"><i></i><i></i><i></i><i></i><i></i></span>
         </div>
       </div>
+      <canvas class="f-noise" id="f-noise" width="240" height="135"></canvas>
+      <div class="f-cap" id="f-cap"></div>
+      <div class="f-cast"><p id="f-l1"></p><p id="f-l2"></p></div>
+      <div id="screen-ticket" class="f-ticketwrap">
+        <div class="f-hand" aria-hidden="true"></div>
+        <div class="ticket">
+          <h2>准　考　证</h2>
+          <div class="row"><span>考试名称</span><span>全球大型高危险性统一考试</span></div>
+          <div class="row"><span>考生姓名</span><span class="f-namebox"><input id="name-in" maxlength="8" placeholder="填写真实姓名" autocomplete="off" enterkeyhint="go" aria-label="考生姓名" /><b class="f-ink" id="f-ink"></b></span></div>
+          <div class="row"><span>准考证号</span><span id="ticket-no">——</span></div>
+          <div class="row"><span>身份</span><span>考生 · 真身入场</span></div>
+          <div class="row"><span>科目安排</span><span>3 + 1 + 1（物理 / 外语 / 历史 / 数学 / 语文）</span></div>
+          <div class="seal">准考</div>
+          <div class="btns">
+            <button class="btn red" id="btn-enter">确认入场</button>
+            <button class="btn ghost dark" id="btn-back">返回封面</button>
+          </div>
+        </div>
+      </div>
+      <div class="f-sign" aria-hidden="true"><div class="f-plate"><b>考场 003712</b><span>科目：物理</span></div></div>
+      <div class="f-black"></div>
+      <div class="f-skip" aria-hidden="true">点击任意处 / 按任意键跳过</div>
     </div>
 
     <div id="hud" class="hud hidden">
@@ -178,6 +223,8 @@
       <span>状态 <b id="h-hp">100</b></span>
       <span class="clock" id="h-clock">北京时间 --:--</span>
       <span class="hud-btns">
+        <button class="hud-btn" id="btn-undo" title="回退一步（Backspace / Z）">回退</button>
+        <button class="hud-btn" id="btn-skip" aria-pressed="false" title="快进已读内容（F）">快进</button>
         <button class="hud-btn sound-toggle" id="btn-sound" aria-pressed="false" title="环境音（默认静音）">声音：关</button>
         <button class="hud-btn side-toggle" id="btn-side" title="考生档案">档案</button>
         <button class="hud-btn" id="btn-menu" title="返回封面（已自动存档）">封面</button>
@@ -212,6 +259,10 @@
           <h3>物资 / 卡片</h3>
           <div class="card" id="inv">无</div>
         </div>
+        <div class="speed-row" role="group" aria-label="文字速度">
+          <span>文字速度</span>
+          <button class="spd" data-speed="slow">慢</button><button class="spd" data-speed="mid">中</button><button class="spd" data-speed="fast">快</button><button class="spd" data-speed="instant">瞬间</button>
+        </div>
         <div class="side-links">
           <button class="btn ghost small" id="side-recap">剧情回顾</button>
           <button class="btn ghost small" id="side-gallery">结局图鉴</button>
@@ -236,6 +287,17 @@
         <div class="panel-body" id="panel-body"></div>
       </div>
     </div>
+    <div id="chapcard" class="chapcard hidden" role="dialog" aria-label="章节">
+      <div class="cc-box">
+        <div class="cc-top">全球大型高危险性统一考试 · 考场通知</div>
+        <div class="cc-no" id="cc-no"></div>
+        <div class="cc-subj" id="cc-subj"></div>
+        <div class="cc-meta" id="cc-meta"></div>
+        <div class="cc-cast" id="cc-cast"></div>
+        <div class="cc-stamp">开考</div>
+      </div>
+      <div class="cc-skip">点击或按任意键继续</div>
+    </div>
     <div id="stamp" class="stamp-big hidden"></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
@@ -253,6 +315,7 @@
   <script src="scenes_part5.js"></script>
   <script src="scenes_part6.js"></script>
   <script src="scenes_part7.js"></script>
+  <script src="chapters.js"></script>
   <script src="art.js"></script>
   <script src="audio.js"></script>
   <script src="fx.js"></script>

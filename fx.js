@@ -12,6 +12,7 @@
   var MODES = {
     title:   { kind: "ember",  n: 40,  color: "201,163,106" },
     intro:   { kind: "static", n: 0, strong: true },
+    film:    { kind: "snow",   n: 0 },
     cover:   { kind: "snow",   n: 260, wind: 0.45, big: true },
     radio:   { kind: "static", n: 0 },
     snow:    { kind: "snow",   n: 150, wind: 0.25 },
@@ -200,7 +201,7 @@
     if (on !== soundOn) soundOn = Audio.toggle();
     if (soundOn) Audio.scene(mode);
     syncBtns(soundOn);
-    try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (e) { /* 隐私模式：不记偏好 */ }
   }
   document.querySelectorAll(".sound-toggle").forEach(function (b) {
     b.addEventListener("click", function (e) {
@@ -214,13 +215,11 @@
   if (wantSound) {   // 浏览器要求先有用户操作才能出声：等第一次点击/按键再开
     syncBtns(true);
     var arm = function (e) {
-      window.removeEventListener("pointerdown", arm, true);
-      window.removeEventListener("keydown", arm, true);
+      ["touchend", "click", "keydown"].forEach(function (ev) { window.removeEventListener(ev, arm, true); });
       if (e && e.target && e.target.classList && e.target.classList.contains("sound-toggle")) { ignoreClick = true; return; }
       if (!soundOn) setSound(true);
     };
-    window.addEventListener("pointerdown", arm, true);
-    window.addEventListener("keydown", arm, true);
+    ["touchend", "click", "keydown"].forEach(function (ev) { window.addEventListener(ev, arm, true); });
   }
 
   window.addEventListener("resize", resize);

@@ -118,7 +118,23 @@
     death: function (B) { tone(B, "sine", 36, 0.08); tone(B, "sine", 36.6, 0.06); noise(B, "brown", "lowpass", 150, 0.5, 0.1); },
     dawn: function (B) { [261.6, 329.6, 392, 493.9].forEach(function (f, i) { var t = tone(B, "sine", f, 0.022); lfo(B, t.g.gain, 0.05 + i * 0.03, 0.012); }); SCAPES.wind(B, 0.2); }
   };
+  /* 夜车：发动机低频、胎噪、电台人声（带通噪声按音节起伏） */
+  SCAPES.bus = function (B) {
+    var e = tone(B, "sawtooth", 46, 0.035); var ef = ac.createBiquadFilter(); ef.type = "lowpass"; ef.frequency.value = 140;
+    e.g.disconnect(); e.g.connect(ef); ef.connect(B.out); lfo(B, e.o.frequency, 0.3, 3);
+    var road = noise(B, "brown", "lowpass", 260, 0.7, 0.32); lfo(B, road.g.gain, 0.2, 0.06);
+    var voice = noise(B, "pink", "bandpass", 1150, 2.6, 0.0);
+    every(B, 110, function () {
+      var t = ac.currentTime, talk = R() < 0.78;
+      voice.g.gain.cancelScheduledValues(t);
+      voice.g.gain.setTargetAtTime(talk ? 0.05 + R() * 0.09 : 0.004, t, 0.03);
+      voice.f.frequency.setTargetAtTime(800 + R() * 900, t, 0.05);
+    });
+    every(B, 1800, function () { burst(B.out, "white", "highpass", 3000, 0.7, 0.05, 0.6); }, 0.35);   // 对面车辆掠过
+  };
+  SCAPES.silence = function () {};
   var MAP = {
+    film: "bus", black: "silence",
     intro: "radio", radio: "radio", title: "radio", cover: "wind:1", snow: "wind:1", cabin: "fire:1", fire: "fire:1.6", rest: "rest",
     system: "jinbi", jinbi: "jinbi", twin: "system", sea: "sea", village: "village", fog: "village", castle: "castle", ballroom: "castle",
     school: "school", casino: "casino", math: "math", core: "core", death: "death", dawn: "dawn"
@@ -159,6 +175,18 @@
     click: function () { blip(master, "triangle", 1500, 900, 0.07, 0.05); },
     notice: function () { blip(master, "sine", 880, 0, 0.06, 0.15); setTimeout(function () { if (on) blip(master, "sine", 1320, 0, 0.05, 0.2); }, 110); },
     hit: function () { blip(master, "sine", 90, 30, 0.55, 0.5); burst(master, "brown", "lowpass", 300, 0.7, 0.4, 0.3); },
+    tick: function () { burst(master, "white", "bandpass", 2400 + R() * 2000, 1.2, 0.12, 0.04); },
+    cut: function () {
+      if (bundle) { var t = ac.currentTime; bundle.out.gain.cancelScheduledValues(t); bundle.out.gain.setValueAtTime(0, t); bundle.name = "_cut"; }
+      blip(master, "square", 220, 60, 0.05, 0.08);
+    },
+    skipbeat: function () {
+      if (bundle) { stopBundle(bundle); bundle = null; cur = "black"; }
+      var thump = function (at, k) { var o = ac.createOscillator(); o.type = "sine"; var g = ac.createGain(); o.connect(g); g.connect(master); var t = ac.currentTime + at; o.frequency.setValueAtTime(k ? 52 : 62, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.18); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(k ? 0.4 : 0.6, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26); o.start(t); o.stop(t + 0.3); };
+      thump(0, 0); thump(0.22, 1);              // 咚咚
+      thump(1.9, 0); thump(2.12, 1);            // ……漏掉一拍，再咚咚
+    },
+    sign: function () { blip(master, "triangle", 196, 180, 0.12, 1.6); blip(master, "sine", 392, 0, 0.05, 1.2); burst(master, "pink", "highpass", 2500, 0.6, 0.05, 1.2); },
     card: function () { [0, 1, 2].forEach(function (k) { setTimeout(function () { if (on) blip(master, "sine", PENTA[k + 2] * 2, 0, 0.05, 0.5); }, k * 90); }); }
   };
   function ui(kind) { if (!ac || !on || !UI[kind]) return; try { UI[kind](); } catch (e) { /* ignore */ } }
@@ -174,5 +202,12 @@
     return on;
   }
   document.addEventListener("visibilitychange", function () { if (ac && on) { if (document.hidden) ac.suspend(); else ac.resume(); } });
+  /* iOS / 微信：AudioContext 只能在真实手势（touchend / click）里解锁；每次手势都尝试恢复，并播放一帧静音 */
+  function unlock() {
+    if (!ac || !on || document.hidden) return;
+    if (ac.state !== "running") { try { ac.resume(); } catch (e) { /* ignore */ } }
+    try { var b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch (e) { /* ignore */ }
+  }
+  ["touchend", "click", "keydown"].forEach(function (ev) { window.addEventListener(ev, unlock, { capture: true, passive: true }); });
   window.QQAUDIO = { scene: scene, toggle: toggle, ui: ui, heartbeat: heartbeat, isOn: function () { return on; } };
 })();

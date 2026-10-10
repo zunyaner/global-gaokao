@@ -6,12 +6,44 @@
   const endName = (id) => { const e = ENDS[id]; return e ? (typeof e === "string" ? e : e.name) : ""; };
   const ART = window.QQART || { portrait: () => "", faceFor: () => null, people: {} };
   const SND = window.QQAUDIO || { ui() {}, heartbeat() {} };
+  const CHM = window.QQCH || { chapterOf: () => null };
+  const READ_KEY = "qqgk-read";
+  const SET_KEY = "qqgk-settings";
+  const UNDO_MAX = 30;
+
+  /* 本地存储：隐私模式 / 被禁用时退回内存，游戏照常可玩 */
+  const mem = {};
+  let storeOk = true;
+  const store = {
+    get(k) { if (storeOk) { try { return localStorage.getItem(k); } catch (e) { storeOk = false; } } return k in mem ? mem[k] : null; },
+    set(k, v) { mem[k] = v; if (!storeOk) return; try { localStorage.setItem(k, v); } catch (e) { storeOk = false; } }
+  };
+  const readJSON = (k, dflt) => { try { const v = store.get(k); return v ? JSON.parse(v) : dflt; } catch (e) { return dflt; } };
+
+  const settings = Object.assign({ speed: "mid", skip: false }, readJSON(SET_KEY, {}));
+  settings.skip = false;                       // 快进不跨会话保留
+  const SPEED = { slow: [34, 70], mid: [16, 36], fast: [6, 14], instant: [0, 0] };
+  const saveSettings = () => store.set(SET_KEY, JSON.stringify({ speed: settings.speed }));
+  const readSet = new Set(readJSON(READ_KEY, []));
+  let readDirty = null;
+  function markRead(id) {
+    if (readSet.has(id)) return;
+    readSet.add(id);
+    clearTimeout(readDirty);
+    readDirty = setTimeout(() => store.set(READ_KEY, JSON.stringify([...readSet])), 200);
+  }
+
+  /* 旧版 WebKit / 微信 X5 不支持 dvh：用真实可视高度兜底 */
+  const setVh = () => document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px");
+  setVh();
+  window.addEventListener("resize", setVh, { passive: true });
+  window.addEventListener("orientationchange", () => setTimeout(setVh, 250), { passive: true });
 
   const state = {
     name: "", ticket: "", score: 0, viol: 0, hp: 100,
     inv: [], flags: {}, yh: 0, qj: 0,
     subj: "待定", exam: "入场", scene: "boot",
-    clock: 17 * 60 + 30, log: [], hints: 0, trail: []
+    clock: 17 * 60 + 30, log: [], hints: 0, trail: [], hist: []
   };
 
   let typing = false, skipType = false, typeToken = 0, timer = null, choiceMap = [];
@@ -20,14 +52,16 @@
 
   /* ---------- 存档 ---------- */
   function save() {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) { /* 本地存储不可用时静默 */ }
+    let raw;
+    try { raw = JSON.stringify(state); } catch (e) { return; }
+    store.set(SAVE_KEY, raw);
   }
   function hasSave() {
-    try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
+    return !!store.get(SAVE_KEY);
   }
   function load() {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      const raw = store.get(SAVE_KEY);
       if (!raw) return false;
       const d = JSON.parse(raw);
       Object.assign(state, d);
@@ -36,17 +70,18 @@
       state.log = d.log || [];
       state.trail = d.trail || [];
       state.hints = d.hints || 0;
+      state.hist = Array.isArray(d.hist) ? d.hist.slice(-UNDO_MAX) : [];
       return true;
     } catch (e) { return false; }
   }
   function getEndings() {
-    try { return JSON.parse(localStorage.getItem(END_KEY) || "[]"); } catch (e) { return []; }
+    return readJSON(END_KEY, []);
   }
   function markEnding(id) {
     const got = getEndings();
     if (got.includes(id)) return;
     got.push(id);
-    try { localStorage.setItem(END_KEY, JSON.stringify(got)); } catch (e) { /* ignore */ }
+    store.set(END_KEY, JSON.stringify(got));
   }
 
   /* ---------- 页内提示（不使用浏览器弹窗） ---------- */
@@ -145,7 +180,7 @@
     if (fx.log) log(fx.log);
   }
 
-  function typeText(el, text, cb) {
+  function typeText(el, text, cb, instant) {
     const token = ++typeToken;          // 新一段文字开始时，旧的打字循环自动作废
     const scroller = el.closest(".stage");
     typing = true;
@@ -161,7 +196,8 @@
       typing = false;
       cb && cb();
     };
-    if (reduce) { finish(); return; }
+    const sp = SPEED[settings.speed] || SPEED.mid;
+    if (reduce || instant || sp[0] === 0) { finish(); return; }
     const tick = () => {
       if (token !== typeToken) return;
       if (skipType) { finish(); return; }
@@ -171,7 +207,7 @@
         el.scrollTop = el.scrollHeight;
         if (scroller && scroller.scrollHeight > scroller.clientHeight) scroller.scrollTop = scroller.scrollHeight;
         const ch = text[i - 1];
-        setTimeout(tick, ch === "\n" ? 36 : 16);
+        setTimeout(tick, ch === "\n" ? sp[1] : sp[0]);
       } else {
         typing = false;
         cb && cb();
@@ -221,6 +257,7 @@
   function renderArt(sc) {
     const art = $("#art");
     art.innerHTML = "";
+    $(".stage").classList.toggle("has-art", !!sc.art);   // 代替 :has()，兼容旧版微信 / Safari
     if (!sc.art) return;
     if (sc.art === "seats") {
       const wrap = document.createElement("div");
@@ -378,6 +415,7 @@
     if (c.needSeat && !state.flags.pickedSeat) { log("先在长桌上点一个座位。"); toast("先在长桌上点一个座位。"); return; }
     const from = SCENES[state.scene];
     SND.ui("click");
+    if (from && !from.nosave) pushSnap();
     if (from && !from.nosave && !from.ending) {
       state.trail.push({ s: state.subj, at: from.loc || "", c: c.text, t: hhmm().slice(5) });
       if (state.trail.length > 240) state.trail.shift();
@@ -396,13 +434,14 @@
     go(c.next);
   }
 
+  const FILM = () => window.QQFILM || null;
   function showTitle() {
     $("#app").classList.remove("side-open");
+    if (FILM()) FILM().hide();
     setDanger(false);
     vis("#screen-game", false);
     vis("#hud", false);
     vis("#screen-title", true);
-    vis("#screen-ticket", false);
     $("#lamp").hidden = true;
     setBg("cover");
     choiceMap = [];
@@ -457,6 +496,17 @@
     if (!sc.nosave) state.scene = id;
     if (sc.fx && !resume) apply(sc.fx);      // 读档续考时不重复结算场景效果
     if (sc.enter) sc.enter(state);
+    /* 科目 / 考场始终由场景所属章节推导（读档、回退、任何入口都一致） */
+    const ch = sc.nosave ? null : CHM.chapterOf(id, sc);
+    let card = null;
+    if (ch) {
+      if (ch.subj) state.subj = ch.subj;
+      if (ch.exam) state.exam = ch.exam;
+      if (ch.card && !state.flags["card:" + ch.key]) {
+        state.flags["card:" + ch.key] = true;
+        if (!resume) card = ch.card;
+      }
+    }
     if (sc.stamp && !resume) showStamp(sc.stamp);
     if (sc.flash) flash();
     if (state.hp <= 0 && id !== "dead") { go("dead"); return; }
@@ -465,7 +515,7 @@
     choiceMap = [];
     $("#app").classList.remove("side-open");
     vis("#screen-title", false);
-    vis("#screen-ticket", false);
+    if (FILM()) FILM().hide();
     vis("#screen-game", true);
     vis("#hud", !sc.nohud);
     setBg(sc.bg || "title");
@@ -488,7 +538,93 @@
     renderHud();
     $("#choices").innerHTML = "";
     const txt = typeof sc.text === "function" ? sc.text(state) : sc.text;
-    typeText($("#text"), txt, () => renderChoices(sc));
+    const wasRead = readSet.has(id);
+    const fast = settings.skip && wasRead;
+    if (settings.skip && !wasRead && !sc.ending) setSkip(false, "未读内容 · 快进已停止");
+    const myTok = ++goToken;
+    const run = () => {
+      if (myTok !== goToken) return;
+      typeText($("#text"), txt, () => {
+        markRead(id);
+        renderChoices(sc);
+        autoAdvance(sc, myTok);
+      }, fast);
+    };
+    if (card) { $("#text").textContent = ""; showCard(card, run); } else run();
+  }
+
+  /* ---------- 快进：已读场景瞬显，只有一个选项时自动推进；遇到未读即停 ---------- */
+  let goToken = 0;
+  function autoAdvance(sc, tok) {
+    if (!settings.skip || sc.ending || sc.art === "shop" || sc.art === "seats") return;
+    if (choiceMap.length !== 1 || !readSet.has(state.scene)) return;
+    const c = choiceMap[0];
+    if (c.needSeat || c.roll || c.dead) return;
+    setTimeout(() => { if (tok === goToken && settings.skip && !cardOpen() && !panelOpen() && !modalOpen()) pick(c); }, 320);
+  }
+  function setSkip(on, msg) {
+    settings.skip = !!on;
+    const b = $("#btn-skip");
+    if (b) { b.setAttribute("aria-pressed", on ? "true" : "false"); b.classList.toggle("on", !!on); b.textContent = on ? "快进中" : "快进"; }
+    if (msg) toast(msg);
+    if (on && !$("#screen-game").classList.contains("hidden")) {
+      if (typing && readSet.has(state.scene)) skipType = true;
+      if (!typing) autoAdvance(SCENES[state.scene] || {}, goToken);
+    }
+  }
+
+  /* ---------- 回退：恢复上一次选择前的完整状态 ---------- */
+  function pushSnap() {
+    const { hist, ...rest } = state;
+    try { state.hist.push(JSON.stringify(rest)); } catch (e) { return; }
+    if (state.hist.length > UNDO_MAX) state.hist.splice(0, state.hist.length - UNDO_MAX);
+  }
+  function undo() {
+    if ($("#screen-game").classList.contains("hidden") || cardOpen()) return;
+    if (!state.hist || !state.hist.length) { toast("没有可以回退的选择。"); return; }
+    let snap;
+    try { snap = JSON.parse(state.hist.pop()); } catch (e) { toast("回退记录损坏。"); return; }
+    const hist = state.hist;
+    const cards = {};                                   // 章节卡每轮只放一次：回退不重置
+    Object.keys(state.flags || {}).forEach((k) => { if (k.startsWith("card:")) cards[k] = true; });
+    Object.keys(state).forEach((k) => { if (k !== "hist") delete state[k]; });
+    Object.assign(state, snap, { hist });
+    state.flags = Object.assign(state.flags || {}, cards);
+    if (settings.skip) setSkip(false);
+    typeToken++; goToken++;
+    SND.ui("page");
+    go(state.scene, true);
+    save();
+    toast("已回退一步（剩 " + hist.length + " 步）");
+  }
+
+  /* ---------- 章节仪式卡 ---------- */
+  let cardDone = null, cardTimer = null;
+  const cardOpen = () => !$("#chapcard").classList.contains("hidden");
+  function showCard(c, done) {
+    const el = $("#chapcard");
+    $("#cc-no").textContent = c.no;
+    $("#cc-subj").textContent = c.subj;
+    $("#cc-meta").innerHTML = (c.meta || []).map((m) => `<span>${esc(m)}</span>`).join("");
+    $("#cc-cast").textContent = "【" + c.cast + "】";
+    el.dataset.tone = c.tone || "";
+    el.classList.remove("hidden", "out");
+    void el.offsetWidth;
+    el.classList.add("play");
+    cardDone = done;
+    SND.ui("stamp");
+    clearTimeout(cardTimer);
+    cardTimer = setTimeout(closeCard, reduceMotion ? 2200 : 3600);
+  }
+  function closeCard() {
+    if (!cardOpen()) return;
+    clearTimeout(cardTimer);
+    const el = $("#chapcard");
+    el.classList.remove("play");
+    el.classList.add("hidden");
+    SND.ui("page");
+    const d = cardDone; cardDone = null;
+    d && d();
   }
 
   function startClock() {
@@ -499,10 +635,10 @@
     }, 1400);
   }
 
-  function newGame(force) {
+  function newGame(force, mode) {
     if (!force && hasSave()) {
       modal("已有一份考试记录。领取新的准考证后，旧记录将在入场时被覆盖。", [
-        { text: "领取新准考证", act: () => newGame(true) },
+        { text: "领取新准考证", act: () => newGame(true, mode) },
         { text: "继续旧考试", ghost: true, act: cont },
         { text: "取消", ghost: true }
       ]);
@@ -511,18 +647,19 @@
     Object.assign(state, {
       name: "", ticket: "", score: 0, viol: 0, hp: 100, inv: [],
       flags: {}, yh: 0, qj: 0, subj: "待定", exam: "入场",
-      scene: "boot", clock: 17 * 60 + 30, log: ["收音机滋啦作响。"], hints: 0, trail: []
+      scene: "boot", clock: 17 * 60 + 30, log: ["收音机滋啦作响。"], hints: 0, trail: [], hist: []
     });
     state.ticket = "A-17-" + String(1000 + Math.floor(Math.random() * 9000));
     $("#ticket-no").textContent = state.ticket;
     $("#name-in").value = "";
     $("#name-in").placeholder = "填写真实姓名";
     $("#name-in").classList.remove("err");
+    $("#name-in").disabled = false;
+    $("#f-ink").textContent = "";
     vis("#screen-game", false);
     vis("#hud", false);
     vis("#screen-title", false);
-    vis("#screen-ticket", true);
-    setTimeout(() => $("#name-in").focus(), 0);
+    if (FILM()) FILM().ticket(mode || "short");
   }
 
   function enter() {
@@ -536,11 +673,21 @@
       inp.focus();
       return;
     }
+    if (entering) return;
+    entering = true;
     state.name = name;
-    log(`考生 ${name} 入场 · ${state.ticket}`);
-    startClock();
-    go("boot");
+    $("#name-in").blur();
+    const begin = () => {
+      entering = false;
+      log("信号接入。");
+      log(`考生 ${name} 入场 · ${state.ticket}`);
+      state.trail.push({ s: "待定", at: "哈尔滨 · 十月的夜", c: "攥紧准考证", t: "17:30" });
+      startClock();
+      go("boot3");
+    };
+    if (FILM()) FILM().develop(name, begin); else begin();
   }
+  let entering = false;
 
   function cont() {
     if (!load()) { toast("无存档。请先领取准考证。"); return; }
@@ -585,10 +732,23 @@
   $("#panel").addEventListener("click", (e) => { if (e.target.id === "panel") closePanel(); });
   document.querySelectorAll(".ptab").forEach((b) => { b.onclick = () => openPanel(b.dataset.tab); });
   $("#btn-rules").onclick = (e) => stampPress(e.currentTarget, () => go("rules_only"));
-  $("#btn-back").onclick = () => showTitle();
+  $("#btn-back").onclick = () => { if (FILM()) FILM().toCover(); else showTitle(); };
   $("#btn-enter").onclick = enter;
   $("#btn-menu").onclick = () => go("title");
   $("#btn-side").onclick = () => $("#app").classList.toggle("side-open");
+  $("#btn-undo").onclick = undo;
+  $("#btn-skip").onclick = () => setSkip(!settings.skip, settings.skip ? "" : "快进已读内容 · 遇到未读自动停止");
+  $("#chapcard").addEventListener("click", (e) => { e.stopPropagation(); closeCard(); });
+  function renderSpeed() {
+    document.querySelectorAll(".spd").forEach((b) => {
+      const on = b.dataset.speed === settings.speed;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+  document.querySelectorAll(".spd").forEach((b) => {
+    b.onclick = () => { settings.speed = b.dataset.speed; saveSettings(); renderSpeed(); if (typing) skipType = settings.speed === "instant"; };
+  });
+  renderSpeed();
   $(".stage").addEventListener("click", () => {
     if (typing) skipType = true;
     $("#app").classList.remove("side-open");
@@ -596,6 +756,7 @@
   $("#name-in").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); enter(); } });
 
   document.addEventListener("keydown", (e) => {
+    if (cardOpen()) { e.preventDefault(); if (!e.repeat) closeCard(); return; }
     if (modalOpen()) { if (e.key === "Escape") closeModal(); return; }
     if (panelOpen()) { if (e.key === "Escape") { e.preventDefault(); closePanel(); } return; }
     if (e.key === "Escape") { $("#app").classList.remove("side-open"); return; }
@@ -607,6 +768,8 @@
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if ((e.key === "h" || e.key === "H") && $(".hint-btn")) { e.preventDefault(); useHint(); return; }
+    if (e.key === "Backspace" || e.key === "z" || e.key === "Z") { e.preventDefault(); undo(); return; }
+    if (e.key === "f" || e.key === "F") { e.preventDefault(); setSkip(!settings.skip); return; }
     const n = parseInt(e.key, 10);
     if (n >= 1 && n <= 9 && choiceMap[n - 1]) { e.preventDefault(); pick(choiceMap[n - 1]); }
   });
@@ -616,7 +779,7 @@
   const panelOpen = () => !$("#panel").classList.contains("hidden");
   function savedTrail() {
     if (state.trail && state.trail.length) return { name: state.name, trail: state.trail };
-    try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); if (d && d.trail) return { name: d.name, trail: d.trail }; } catch (e) { /* ignore */ }
+    const d = readJSON(SAVE_KEY, null); if (d && d.trail) return { name: d.name, trail: d.trail };
     return { name: "", trail: [] };
   }
   function renderGallery() {
@@ -662,6 +825,6 @@
     if (panelReturn && panelReturn.focus) panelReturn.focus();
   }
 
-  showTitle();
-  window.QQGK = { go, state, save, cond, showTitle, openPanel, closePanel, useHint };
+  if (!FILM()) showTitle();
+  window.QQGK = { go, state, save, cond, showTitle, openPanel, closePanel, useHint, undo, setSkip, settings, readSet, closeCard, newGame, store };
 })();
