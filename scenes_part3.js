@@ -1,82 +1,117 @@
-/* 第三部分：历史（海上航行）· 终章 · 结局 */
-var ENDINGS = {
-  dead: "移除",
-  end_pass: "待考",
-  end_invig: "监考官",
-  end_yh: "同行",
-  end_qj: "同考",
-  end_true: "对影成三人"
-};
-
-function endingText(s, body) {
-  return body + "\n\n——————\n考生：" + s.name + "　准考证：" + s.ticket +
-    "\n最终分数：" + s.score + "　违规：" + s.viol + "　身体状态：" + s.hp;
-}
-
-var ENDING_CHOICES = [
-  { text: "重新领取准考证", next: "new" },
-  { text: "返回封面", next: "title" }
-];
-
+/* 第三部分：历史（海上马车夫） */
 Object.assign(SCENES, {
 hist_in: {
-  loc: "历史考场 · 海上",
+  loc: "历史考场 · 荒岛",
   bg: "sea",
-  radio: "科目：历史。题干：海上马车夫。冰化之时，请将船员平安送回家。",
-  who: "",
+  radio: "本场计分方式采用行为参与模式，没有答题卡，没有标准答案。",
+  who: "系统广播", whoClass: "sys",
   fx: { exam: "历史考场", subj: "历史", log: "进入历史考场。" },
-  text: "一艘老式货船，被冻在一片礁石和浮冰中间。桅杆上挂着冰凌，船帆硬得像铁皮。\n三十名考生挤在甲板上。船员们裹着破毯子，眼神麻木：「冰化了，我们就能回家了。」\n冰什么时候化，没人知道。\n秦究——现在是考生了——靠着船舷，朝游惑扬了扬下巴：「冷吗？」\n游惑：「不冷。」他嘴唇已经冻白了。",
+  text: "一支商船队被冻在礁石荒岛边，桅杆挂着冰凌，船帆硬得像铁皮。船员们裹着破毯子缩在山洞里：「冰化了，我们就能回家了。」\n【题目要求：不能让任何一位船员死去，否则，由当日凌晨0点排名最后一组的考生承担死亡责任。】\n【分数实时更新，如有任何无关考试答案的问题，可询问本场监考官154、922、078、021。】\n三十名考生按组分开。秦究靠着船舷，朝游惑扬了扬下巴：「冷么？」\n游惑：「不冷。」他嘴唇已经冻白了。",
+  hint: "这场按「组」排名。哪组倒数第一，哪组替死去的船员担责。",
   choices: [
-    { text: "下船舱，照看受伤的船员", next: "hist_cold", fx: { score: 2, log: "你给船员包扎冻伤。" } },
-    { text: "跟游惑和秦究上甲板", next: "hist_cold", fx: { yh: 1, qj: 1 } }
+    { text: "跟游惑、秦究一组", next: "hist_cave", fx: { yh: 1, qj: 1, flag: { groupYQ: true } } },
+    { text: "跟于闻、老于一组", next: "hist_cave", fx: { score: 1 } }
+  ]
+},
+hist_cave: {
+  loc: "历史考场 · 山洞",
+  bg: "sea",
+  radio: "气温持续下降。",
+  who: "于闻", whoClass: "npc",
+  fx: { clock: 120 },
+  text: "山洞里横七竖八躺着船员，有人腿上的伤口已经发黑，有人烧得说胡话。\n洞口的风一阵比一阵硬。柴火只剩一小捆。\n于闻翻遍了船舱：「药箱里就几卷绷带和半瓶酒精……这能算『找到药物』吗？」\n老于搓着手：「先生火，人冻死比病死快！」",
+  hint: "这场的得分点是「为船员治伤」和「保证洞内温度」。先救伤员，再想燃料。",
+  choices: [
+    { text: "给伤得最重的船员清创包扎", next: "hist_cold", fx: { score: 4, flag: { healed: true }, log: "为船员治伤 · 得分点。" } },
+    { text: "去林子里劈柴", next: "hist_cold", fx: { score: 1, hp: -10, log: "劈柴 1 分。手冻裂了。" } },
+    { text: "把仅剩的柴一次全烧了", next: "hist_cold", fx: { hp: -10, log: "火旺了半小时，然后全灭了。" } }
   ]
 },
 hist_cold: {
   loc: "历史考场 · 冰封的夜",
   bg: "sea",
-  radio: "气温持续下降。",
-  who: "",
-  fx: { clock: 360, hp: -10 },
-  text: "夜里冷得骨头疼。柴火早就烧完了，船员一个接一个地发起高烧。\n再这样下去，等不到冰化，题目就会先「没」几个。\n游惑看了一眼脚下的甲板，又看了一眼秦究。\n秦究笑了：「想到一块儿去了。」\n——这艘船，是系统的道具。拆系统的船取暖，算不算违规？",
+  who: "秦究", whoClass: "qj", face: "qjx",
+  fx: { clock: 300, hp: -5 },
+  text: "夜里冷得骨头疼。柴火早就烧完了，又有两个船员发起高烧。\n再这样下去，等不到冰化，题目就会先「没」几个。\n游惑看了一眼停在礁石边的那艘大船——船身上印着系统的标志。又看了一眼秦究。\n秦究笑了：「想到一块儿去了。」\n——拆系统的船取暖，算不算违规？",
+  hint: "拆系统船会被扣 10 分、送去关禁闭，但船员能活。拒绝的话，船员可能会死，最后一名的组要担责。",
   choices: [
-    { text: "帮他们拆船", next: "hist_jinbi", flash: true, fx: { viol: 1, yh: 1, qj: 1, flag: { tore: true }, log: "拆毁系统船只 · 违规 +1" } },
-    { text: "把自己的外套和毯子给船员", next: "hist_octopus", fx: { hp: -15, score: 3, log: "你冻得发抖，但船员退烧了。" } },
-    { text: "「别！这肯定违规！」", next: "hist_octopus", fx: { yh: -1, log: "他们还是拆了。被带走的只有他们俩。" } }
+    { text: "帮他们拆船", next: "hist_tear", flash: true, fx: { viol: 1, yh: 1, qj: 1, flag: { tore: true }, log: "拆除系统船只 · 违规 +1" } },
+    { text: "把自己的外套和毯子给船员", next: "hist_score", fx: { hp: -20, score: 3, log: "你冻得发抖，但船员退烧了。" } },
+    { text: "「别！这肯定违规！」", next: "hist_score", fx: { yh: -1, log: "他们还是拆了。被带走的只有他们俩。" } }
+  ]
+},
+hist_tear: {
+  loc: "历史考场 · 系统船",
+  bg: "fire",
+  radio: "考生游惑、秦究违规拆除系统船只，已通知本场监考。",
+  who: "系统", whoClass: "sys",
+  text: "木板一块块被撬下来，扔进山洞的火堆。火光照亮了每一张冻青的脸。\n【监考官154、922、078、021正在赶来的路上。】\n154 到的时候，看着那艘只剩骨架的船，半天说不出话。\n922：「……这已经不是违规了，这是拆迁。」",
+  choices: [
+    { text: "把手里那块船板也扔进火里", next: "hist_score", fx: { score: -8, log: "拆船：违规考生扣除 10 分。" } }
+  ]
+},
+hist_score: {
+  loc: "历史考场 · 0点",
+  bg: "sea",
+  radio: "距离0点还有2分有21秒，重新核算今日分数。",
+  who: "系统", whoClass: "sys",
+  text: function(s){
+    var t = "【今日考生触发得分点共两项。】\n【1、为船员治伤。共计6分，其中找到药物2分，诊治4分。】\n【2、找到燃料保证洞内温度。共计8分，其中找到充足燃料5分，劈柴1分，安全地生火2分。】\n【全部加分项核算完毕，现在核算额外扣分项。】\n";
+    t += s.flags.tore || s.flags.groupYQ
+      ? "【1、考场违规，拆分系统船。被拆系统船功能丧失，彻底报废，无法维修，行为性质后果极其严重，扣除违规考生共计10分。】\n游惑、秦究那组，直接掉到了倒数第一。" + (s.flags.tore ? "\n——包括你。" : "\n你在他们组，跟着一起垫底。")
+      : "你们组排在中间。另一头，游惑和秦究那组掉到了倒数第一。";
+    return t;
+  },
+  choices: [
+    { text: "等着看「最后一组」要承担什么", next: "hist_jinbi", if: { flag: "tore" } },
+    { text: "等着看「最后一组」要承担什么", next: "hist_octopus", if: { noflag: "tore" } }
   ]
 },
 hist_jinbi: {
-  loc: "监考区 · 禁闭室",
-  bg: "system",
+  loc: "监考船 · 禁闭室",
+  bg: "jinbi",
   radio: "违规考生已分开关押。",
   who: "",
-  fx: { score: -10, flag: { heardA: true }, clock: 180, log: "违规扣分 -10。" },
-  text: "处罚来得很快。你们三个被分开关进不同的禁闭室。\n黑暗里，你听见墙那头有个女人的声音，压得很低，又很急：\n「考官A……游惑，快醒醒。」\n你屏住呼吸。考官A？\n更远的地方，传来秦究翻纸页的声音——像是在读一本旧日记。",
+  fx: { flag: { heardA: true }, clock: 180, log: "拆船违规 · 分开关押。" },
+  text: "你们三个被分开关进监考船上不同的禁闭室。\n黑暗里，墙那头有个女人的声音，压得很低，又很急：\n「考官A……游惑，快醒醒。」\n你屏住呼吸。考官A？\n更远的地方，传来秦究翻纸页的声音——赵文途的日记，他一直揣着。后来他说，禁闭室的门一关，他眼前是一片废墟，废墟里站着一个人，戴着墨镜。\n「好像……这种记忆才是对的。」",
   choices: [
     { text: "贴着墙，听她继续说", next: "hist_octopus", fx: { yh: 1, log: "你听见了「考官A」。" } },
-    { text: "敲墙：「秦究？你在看什么？」", next: "hist_octopus", fx: { qj: 1, log: "秦究：「赵文途的日记。」" } }
+    { text: "敲墙：「秦究？你看见了什么？」", next: "hist_octopus", fx: { qj: 1, log: "秦究：「一个……很眼熟的人。」" } }
   ]
 },
 hist_octopus: {
   loc: "历史考场 · 礁石",
   bg: "sea",
-  radio: function(s){ return s.flags.tore ? "当前排名：倒数第一。" : "警告：海怪靠近。"; },
-  who: "",
+  radio: "这座荒岛并非独属于避难的船员。",
+  who: "系统", whoClass: "sys",
   flash: true,
   text: function(s){
-    return (s.flags.tore ? "从禁闭室回来，你们的分数被倒扣成了倒数第一。\n" : "") +
-      "海面突然鼓起。一条又丑又大的章鱼从冰缝里伸出触须，专挑排名最末的人抓。\n触须卷住秦究的腰，又去缠游惑的脚踝。\n下一秒，游惑抽出刀，秦究反手扣住触须——\n十分钟后，甲板上支起了火，章鱼须在上面滋滋冒油。\n于闻目瞪口呆：「……烤、烤了？」";
+    return "【这八个月中，岛上猎物和附近鱼流都进了船员的肚子，有位原住民不满意了。】\n【今天对它来说是个好日子，死去的船员刚好能填一填它的胃。可是大副下令把同伴的尸体藏起来了，坏了它的好事。】\n【于是，它把他们抓走啦。】\n海面鼓起。一条又丑又大的章鱼从冰缝里伸出触须，专挑排名最末的那组。" + (s.flags.groupYQ ? "\n触须卷住了你的腰。" : "\n触须卷住秦究的腰，又去缠游惑的脚踝。") + "\n下一秒，游惑抽出刀，秦究反手扣住触须——";
   },
+  hint: "章鱼只抓最后一名。帮忙反击可以；离触须太近、背对海面，都会被卷走。",
   choices: [
-    { text: "递刀过去", next: "hist_rabbit", fx: { yh: 1, score: 2 } },
-    { text: "掏出打火机，把火生旺", next: "hist_rabbit", if: { has: "打火机" }, fx: { qj: 1, score: 3, hp: 10, log: "章鱼须烤得刚好。" } },
-    { text: "躲远点", next: "hist_rabbit", fx: { hp: -15, log: "一根触须扫到了你。" } }
+    { text: "递刀过去", next: "hist_feast", fx: { yh: 1, score: 2 } },
+    { text: "掏出打火机，把火生旺", next: "hist_feast", if: { has: "打火机" }, fx: { qj: 1, score: 3, hp: 10, log: "章鱼须烤得刚好。" } },
+    { text: "转身往洞里跑", next: "hist_feast", fx: { hp: -35, log: "一根触须扫到了你的后背。" } }
+  ]
+},
+hist_feast: {
+  loc: "历史考场 · 篝火",
+  bg: "fire",
+  radio: "时隔多日，船员们终于体会到了饱餐一顿的感觉，达到额外奖励条件。",
+  who: "于闻", whoClass: "npc",
+  fx: { score: 3, hp: 15, clock: 120 },
+  text: "十分钟后，礁石上支起了火，章鱼须在上面滋滋冒油。\n于闻目瞪口呆：「……烤、烤了？」\n船员们哭着啃：「太棒了，今晚换菜了！」\n【原定于15日后的升温化冰期提前近两周，改为2天后，请所有考生抓住机会，送所有商船队的成员返航。】\n【注，化冰机会只有一次，错过后果自负。】",
+  choices: [
+    { text: "去帮船员修船", next: "hist_rabbit", fx: { score: 2, log: "修葺商船 · 得分点。" } },
+    { text: "坐在火边歇口气", next: "hist_rabbit", fx: { hp: 10 } }
   ]
 },
 hist_rabbit: {
   loc: "历史考场 · 篝火",
   bg: "fire",
   who: "监考官 021", whoClass: "sys",
-  text: "一只系统兔子蹦上甲板，被秦究拎着耳朵提起来，没多久也上了火。\n篝火那头，一个女监考官走了过来——021。她看着游惑，看了很久。\n「你真的什么都不记得了？」她说，「你是考官A。系统最早的主监考官。」\n火光噼啪。游惑没有动。\n秦究也没有说话。他看着游惑，眼神第一次没有笑。",
+  text: "一只系统兔子蹦上礁石，被秦究拎着耳朵提起来，没多久也上了火。\n078 在旁边看傻了：「……现在申请调组来得及么？」\n秦究冲游惑伸手：「大考官，给根烟。」\n游惑一愣：「你叫我什么？」\n篝火那头，女监考官 021 走了过来。她看着游惑，看了很久。\n「你真的什么都不记得了？」她说，「你是考官A。」",
   choices: [
     { text: "看向游惑", next: "hist_result", fx: { yh: 1, flag: { knowA: true }, log: "游惑是考官A。" } },
     { text: "看向秦究", next: "hist_result", fx: { qj: 1, flag: { knowA: true }, log: "秦究好像早就猜到了。" } }
@@ -85,117 +120,20 @@ hist_rabbit: {
 hist_result: {
   loc: "历史考场 · 结算",
   bg: "sea",
-  radio: "历史科目结算完毕。",
+  radio: "商船队全部返航，考生交卷，本场考试结束。",
   who: "系统", whoClass: "sys",
-  stamp: "及格",
+  enter: function(s){ s.flags.gradeC = !!(s.flags.tore || s.flags.groupYQ || s.score < 20); },
   text: function(s){
-    return "第七天，冰化了。船员们站在船头，望着远处的陆地，一个个哭得像孩子。\n他们回家了。\n结算墙亮起：\n及格。\n" +
-      (s.flags.tore ? "游惑、秦究，以及你：等级 C。【需重考。】\n秦究耸肩：「重考就重考。」" : "游惑、秦究：等级 C。【需重考。】\n你的等级：B。");
+    var t = "第二天，冰化了。船员们站在船头，望着远处的陆地，一个个哭得像孩子。\n【护送商船顺利返航为本场考试主题干，共计15分。】\n【考生触发扣分点：破坏考场惩罚机制，恶意放生惩罚工具。】——那条章鱼，被他们放回海里了。\n【所有考生已完成三门考试，按照全球同类考生排序百分比划分等级。】\n";
+    t += s.flags.gradeC
+      ? "游惑、秦究：C。\n你：C。\n【C级考生改由监考官带回，另择考场完成重考。】\n【考生游惑、秦究损坏监考船，教唆考场工具袭击监考官，构成违规。同样由监考官带回，处罚后再进行重考。】"
+      : "游惑、秦究：C。\n你：B。\n【B级及以上考生顺利进入下一轮考试。】\n021 看了你一眼：「你可以直接走。也可以——跟他们一起回监考区。」";
+    return t;
   },
   choices: [
-    { text: "领取及格章", next: "final_gate", fx: { flag: { pass3: true }, score: 6, exam: "休息处", subj: "待定", log: "历史及格。" } }
+    { text: "跟着监考船，去监考区", next: "pol_ship", stamp: "C", if: { flag: "gradeC" }, fx: { flag: { pass3: true }, exam: "监考船", subj: "重考", log: "历史 C 级 · 重考。" } },
+    { text: "「我跟他们一起走。」", next: "pol_ship", if: { noflag: "gradeC" }, fx: { flag: { pass3: true, volunteer: true }, yh: 1, qj: 1, exam: "监考船", subj: "重考", log: "历史 B 级 · 主动随行。" } },
+    { text: "拿着 B，直接前往下一门", next: "casino", stamp: "B", if: { noflag: "gradeC" }, fx: { flag: { pass3: true, skipRetake: true }, score: 6, exam: "休息处", subj: "休息", log: "历史 B 级。" } }
   ]
-},
-
-/* ---------- 终章 ---------- */
-final_gate: {
-  loc: "考生休息处 · 很久以后",
-  bg: "radio",
-  radio: "下一门考试科目：语文。",
-  who: "",
-  fx: { clock: 600 },
-  text: function(s){
-    return "后来又考了很多门。\n历史重考，在公爵的古堡。数学，在鬼屋兄妹和镜子里。每一场，游惑和秦究都站在一起，把题目做成系统最头疼的样子。\n于闻长高了一点，老于学会了不念叨。\n" +
-      "你听说了更多：考官A，主监考官，被清空的记忆，一个从没成功的计划。\n现在，广播说，最后一门是语文。\n" +
-      (s.score >= 30 ? "另外，一封盖着系统印章的通知书落在你手里：【考生" + s.name + "，成绩优异，可申请转为监考官。】" : "");
-  },
-  choices: [
-    { text: "接受通知书，转为监考官", next: "end_invig", if: { minScore: 30 } },
-    { text: "留在休息处，等下一场", next: "end_pass" },
-    { text: "走进最后一门考场：语文", next: "final_yuwen" }
-  ]
-},
-final_yuwen: {
-  loc: "语文考场 · 终局",
-  bg: "core",
-  radio: "本场考试，无解。",
-  who: "系统", whoClass: "sys",
-  flash: true,
-  text: "这一场，系统没打算让任何人及格。\n题目就是死局。\n可考场里站着的不只是考生。922、154、021……那些老监考官，一个接一个地从白光里走出来，站到考生这一边。\n游惑走在最前面。考官A，这一次没有失忆。\n秦究在他身边，手里转着一副卡牌：「老规矩？」\n游惑：「炸了它。」",
-  choices: [
-    { text: "把所有分数押上，跟他们一起炸考场", next: "end_true", if: { minYh: 5, minQj: 3 }, flash: true },
-    { text: "守在游惑身后", next: "end_yh", if: { minYh: 4 } },
-    { text: "替秦究守住门", next: "end_qj", if: { or: [{ minQj: 3 }, { has: "001的卡牌" }] } },
-    { text: "护着于闻和老于，退到考场边上", next: "end_pass" }
-  ]
-},
-
-/* ---------- 结局 ---------- */
-end_true: {
-  loc: "结局 · 对影成三人",
-  bg: "dawn",
-  who: "结局", whoClass: "sys",
-  ending: "end_true",
-  stamp: "解",
-  text: function(s){
-    return endingText(s, "爆炸声从考场中心炸开，一圈一圈，像有人把整张试卷撕碎了。\n白光、雪、火、海水——所有考场一层层剥落。\n你最后看见的，是两道身影站在废墟中央。游惑的衣角被风掀起，秦究偏头和他说了句什么。\n系统崩塌了。\n\n很久以后，在医院的走廊里，你又见到了他们。一个嫌消毒水味重，一个在旁边笑。\n他们说，要回部队了。\n你想起那面墙上的字。\n解。");
-  },
-  choices: ENDING_CHOICES
-},
-end_yh: {
-  loc: "结局 · 同行",
-  bg: "dawn",
-  who: "结局", whoClass: "sys",
-  ending: "end_yh",
-  stamp: "同行",
-  text: function(s){
-    return endingText(s, "你一直站在游惑身后。他没回头，但每次有东西扑过来，他的刀都先到。\n系统崩塌的那一刻，他终于回头看了你一眼。\n「还行。」他说。\n于闻后来跟你说，这是他哥夸人的最高级别。");
-  },
-  choices: ENDING_CHOICES
-},
-end_qj: {
-  loc: "结局 · 同考",
-  bg: "dawn",
-  who: "结局", whoClass: "sys",
-  ending: "end_qj",
-  stamp: "同考",
-  text: function(s){
-    return endingText(s, "你替秦究守着门。门外是系统，门里是他和游惑。\n门快被撞开的时候，秦究的声音从里面传出来：「同学，再撑十秒。」\n十秒后，世界安静了。\n他推门出来，冲你挑了挑眉：「分数我记下了。这回，是满分。」");
-  },
-  choices: ENDING_CHOICES
-},
-end_invig: {
-  loc: "结局 · 监考官",
-  bg: "system",
-  who: "结局", whoClass: "sys",
-  ending: "end_invig",
-  stamp: "监考",
-  text: function(s){
-    return endingText(s, "你换上了监考官的制服。臂章上有一个新编号。\n922 教你怎么记违规，154 教你怎么开禁闭室。\n后来有一天，系统忽然断电。监考区一片漆黑，所有人都在等。\n灯再也没亮。\n你站在空荡荡的监考台上，想起那个在禁闭室里睡得很香的人——原来，你们一直站在同一边。");
-  },
-  choices: ENDING_CHOICES
-},
-end_pass: {
-  loc: "结局 · 待考",
-  bg: "rest",
-  who: "结局", whoClass: "sys",
-  ending: "end_pass",
-  stamp: "待考",
-  text: function(s){
-    return endingText(s, "你没有走进那扇门，或者走进去了，又退了出来。\n你在休息处等。暖气，吊灯，滚动的兑换目录。\n然后某一天，屏幕黑了。广播没有再响。\n门外不是考场，是一条普通的街，路灯一盏盏亮起来。\n你活着及格了。至于是谁结束了这场考试——你大概猜得到。");
-  },
-  choices: ENDING_CHOICES
-},
-dead: {
-  loc: "系统通知",
-  bg: "death",
-  radio: "考生已被移除。",
-  who: "系统", whoClass: "sys",
-  ending: "dead",
-  stamp: "移除",
-  text: function(s){
-    return endingText(s, "准考证上的名字一点点褪色，像被橡皮擦过。\n你最后听见的，是收音机的白噪音。\n滋啦——滋啦——\n「不及格者，将从系统中移除。」");
-  },
-  choices: ENDING_CHOICES
 }
 });

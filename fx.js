@@ -23,13 +23,20 @@
     village: { kind: "fog",    n: 9,  ash: 30 },
     fog:     { kind: "fog",    n: 12, ash: 20 },
     sea:     { kind: "snow",   n: 90, wind: 1.2, sea: true },
+    jinbi:   { kind: "cold",   n: 30 },
+    twin:    { kind: "snow",   n: 70, wind: 0.6 },
+    school:  { kind: "dust",   n: 60, gold: true },
+    castle:  { kind: "fog",    n: 7,  ash: 24 },
+    ballroom:{ kind: "dust",   n: 60, gold: true },
+    casino:  { kind: "dust",   n: 50, gold: true },
+    math:    { kind: "fog",    n: 6,  ash: 10 },
     death:   { kind: "ash",    n: 90 },
     dawn:    { kind: "dust",   n: 70, gold: true }
   };
 
   function resize() {
     var r = app.getBoundingClientRect();
-    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+    DPR = Math.min(window.devicePixelRatio || 1, r.width < 760 ? 1.25 : 1.5);
     W = Math.max(1, r.width); H = Math.max(1, r.height);
     cvs.width = Math.round(W * DPR); cvs.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -51,14 +58,17 @@
   }
 
   function setMode(m) {
+    setArt(m);
     if (!MODES[m]) m = "title";
     if (m === mode && parts.length) return;
     mode = m;
     var cfg = MODES[m];
-    var n = reduce ? Math.round(cfg.n / 4) : cfg.n;
+    // 手机：粒子数按屏幕面积压缩，最多保留 55%
+    var area = Math.min(1, Math.max(0.55, (W * H) / (1280 * 760)));
+    var n = Math.round((reduce ? cfg.n / 4 : cfg.n) * area);
     parts = [];
     for (var i = 0; i < n; i++) parts.push(spawn(cfg, true));
-    if (cfg.ash) for (var j = 0; j < (reduce ? 5 : cfg.ash); j++) { var a = spawn({ kind: "ash" }, true); a.isAsh = true; parts.push(a); }
+    if (cfg.ash) for (var j = 0; j < Math.round((reduce ? 5 : cfg.ash) * area); j++) { var a = spawn({ kind: "ash" }, true); a.isAsh = true; parts.push(a); }
     Audio.scene(m);
   }
 
@@ -149,85 +159,24 @@
     }
   }
 
-  /* ---------- WebAudio 环境音 ---------- */
-  var Audio = (function () {
-    var ac = null, master, noise, filt, nGain, o1, o2, hGain, crackleTimer = null, on = false, cur = "title";
-    var PRESET = {
-      title:   { f: 1800, q: 0.7, type: "bandpass", n: 0.05, h: 0.00, hz: 55 },
-      intro:   { f: 3200, q: 0.5, type: "bandpass", n: 0.30, h: 0.00, hz: 60 },
-      cover:   { f: 460,  q: 0.9, type: "lowpass",  n: 0.22, h: 0.00, hz: 55, wind: true },
-      radio:   { f: 2600, q: 0.6, type: "bandpass", n: 0.12, h: 0.00, hz: 60 },
-      snow:    { f: 500,  q: 0.9, type: "lowpass",  n: 0.22, h: 0.00, hz: 55, wind: true },
-      sea:     { f: 420,  q: 0.9, type: "lowpass",  n: 0.24, h: 0.015, hz: 45, wind: true },
-      cabin:   { f: 260,  q: 0.5, type: "lowpass",  n: 0.10, h: 0.00, hz: 55, crackle: true },
-      fire:    { f: 380,  q: 0.5, type: "lowpass",  n: 0.16, h: 0.00, hz: 55, crackle: true },
-      rest:    { f: 300,  q: 0.5, type: "lowpass",  n: 0.03, h: 0.02, hz: 60 },
-      system:  { f: 900,  q: 2.0, type: "bandpass", n: 0.03, h: 0.05, hz: 55 },
-      core:    { f: 700,  q: 3.0, type: "bandpass", n: 0.05, h: 0.07, hz: 41 },
-      village: { f: 350,  q: 0.8, type: "lowpass",  n: 0.12, h: 0.01, hz: 49, wind: true },
-      fog:     { f: 320,  q: 0.8, type: "lowpass",  n: 0.12, h: 0.01, hz: 49, wind: true },
-      death:   { f: 180,  q: 0.8, type: "lowpass",  n: 0.06, h: 0.05, hz: 36 },
-      dawn:    { f: 600,  q: 0.5, type: "lowpass",  n: 0.04, h: 0.02, hz: 65 }
-    };
-    function init() {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return false;
-      ac = new AC();
-      master = ac.createGain(); master.gain.value = 0; master.connect(ac.destination);
-      var len = ac.sampleRate * 3, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0), lastV = 0;
-      for (var i = 0; i < len; i++) { var w = Math.random() * 2 - 1; lastV = (lastV + 0.04 * w) / 1.04; d[i] = lastV * 3 + w * 0.15; }
-      noise = ac.createBufferSource(); noise.buffer = buf; noise.loop = true;
-      filt = ac.createBiquadFilter(); nGain = ac.createGain(); nGain.gain.value = 0;
-      noise.connect(filt); filt.connect(nGain); nGain.connect(master); noise.start();
-      o1 = ac.createOscillator(); o2 = ac.createOscillator(); o1.type = "sine"; o2.type = "triangle";
-      hGain = ac.createGain(); hGain.gain.value = 0;
-      o1.connect(hGain); o2.connect(hGain); hGain.connect(master); o1.start(); o2.start();
-      return true;
-    }
-    function crackle() {
-      if (!ac || !on) return;
-      var b = ac.createBufferSource(), len = Math.round(ac.sampleRate * 0.03), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
-      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
-      b.buffer = buf; var g = ac.createGain(); g.gain.value = rnd(0.05, 0.25);
-      b.connect(g); g.connect(master); b.start();
-    }
-    function scene(m) {
-      cur = m;
-      if (!ac || !on) return;
-      var p = PRESET[m] || PRESET.title, now = ac.currentTime;
-      filt.type = p.type;
-      filt.frequency.setTargetAtTime(p.f, now, 0.6);
-      filt.Q.setTargetAtTime(p.q, now, 0.6);
-      nGain.gain.setTargetAtTime(p.n, now, 0.8);
-      hGain.gain.setTargetAtTime(p.h, now, 0.8);
-      o1.frequency.setTargetAtTime(p.hz, now, 0.5);
-      o2.frequency.setTargetAtTime(p.hz * 2.01, now, 0.5);
-      clearInterval(crackleTimer); crackleTimer = null;
-      if (p.crackle) crackleTimer = setInterval(function () { if (Math.random() < 0.55) crackle(); }, 180);
-    }
-    function windTick() {
-      if (!ac || !on) return;
-      var p = PRESET[cur] || {};
-      if (p.wind) filt.frequency.setTargetAtTime(p.f * rnd(0.6, 1.6), ac.currentTime, 1.2);
-    }
-    setInterval(windTick, 1800);
-    function toggle() {
-      if (!ac && !init()) return false;
-      on = !on;
-      if (ac.state === "suspended") ac.resume();
-      master.gain.setTargetAtTime(on ? 0.9 : 0, ac.currentTime, 0.3);
-      if (on) scene(cur); else { clearInterval(crackleTimer); crackleTimer = null; }
-      return on;
-    }
-    function hit() {   // 危险时的一声低闷撞击
-      if (!ac || !on) return;
-      var o = ac.createOscillator(), g = ac.createGain(), now = ac.currentTime;
-      o.frequency.setValueAtTime(90, now); o.frequency.exponentialRampToValueAtTime(30, now + 0.4);
-      g.gain.setValueAtTime(0.5, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      o.connect(g); g.connect(master); o.start(now); o.stop(now + 0.55);
-    }
-    return { scene: scene, toggle: toggle, hit: hit };
-  })();
+  /* ---------- 声音交给 audio.js（QQAUDIO）；缺失时静默 ---------- */
+  var Audio = window.QQAUDIO || { scene: function () {}, toggle: function () { return false; }, ui: function () {}, heartbeat: function () {} };
+  Audio.hit = function () { Audio.ui("hit"); };
+
+  /* ---------- 场景插画层：两层交叉淡化 ---------- */
+  var artBox = document.getElementById("scene-art"), artCur = null, artFlip = 0;
+  function setArt(m) {
+    if (!artBox || !window.QQART) return;
+    var key = window.QQART.has(m) ? m : "";
+    if (key === artCur) return;
+    artCur = key;
+    var layers = artBox.children;
+    var next = layers[artFlip], prev = layers[1 - artFlip];
+    artFlip = 1 - artFlip;
+    next.innerHTML = key ? window.QQART.bg(key) : "";
+    next.dataset.k = key;
+    next.classList.add("on"); prev.classList.remove("on");
+  }
 
   function shake(strong) {
     if (reduce) return;
@@ -249,6 +198,7 @@
   var soundOn = false, ignoreClick = false;
   function setSound(on) {
     if (on !== soundOn) soundOn = Audio.toggle();
+    if (soundOn) Audio.scene(mode);
     syncBtns(soundOn);
     try { localStorage.setItem(SOUND_KEY, soundOn ? "1" : "0"); } catch (e) { /* ignore */ }
   }

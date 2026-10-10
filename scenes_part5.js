@@ -1,0 +1,174 @@
+/* 第五部分：历史重考 · 古堡（世界史 · 糟糕时代）· 禁闭长椅 · 赌场休息处 */
+var SHOP_CASINO = [
+  { name: "热红酒", desc: "身体状态 +25", cost: 2, hp: 25 },
+  { name: "急救箱", desc: "身体状态 +50", cost: 5, hp: 50 },
+  { name: "求助牌", desc: "「监考官的帮助」。危急时换一句提示，并标出危险选项。", cost: 4, hints: 1, max: 3 },
+  { name: "弩箭一捆", desc: "听说下一场的镇民用得上。", cost: 4, inv: "弩箭" },
+  { name: "违规消除券", desc: "违规记录 -1", cost: 6, viol: -1 }
+];
+
+Object.assign(SCENES, {
+castle_in: {
+  loc: "历史重考 · 古堡",
+  bg: "castle",
+  radio: "考生已从各处乘马车而来，驶往最终考试地点。",
+  who: "系统广播", whoClass: "sys",
+  fx: { exam: "古堡", subj: "历史（重考）", hp: 20, log: "进入历史重考：古堡。" },
+  text: "马车在山道上颠了一夜。车窗外的古堡越来越近，窗里亮着烛光。\n【本场考试科目：历史】\n【考查知识点：世界史，糟糕时代】\n【本场计分方式采用角色扮演模式，没有答题卡，没有标准答案。】\n【本次考试分数只在每夜12点整公布，除此以外，只有每组考生自己知道实时变动。】\n【题目要求：作为客人，考生不能违背公爵提出的每一个要求，否则整组处罚。】\n同车的还有一位叫高齐的中年考生，见过世面的样子；一个叫周祺的女生，一路紧张地攥着裙角。",
+  hint: "公爵的「要求」必须照办——但没说必须照他想要的方式办。",
+  choices: [
+    { text: "下车", next: "castle_room" }
+  ]
+},
+castle_room: {
+  loc: "古堡 · 客房",
+  bg: "ballroom",
+  who: "管家", whoClass: "npc",
+  text: "管家把客人两两分进房间，开口就是「先生」「夫人」——作为 NPC，他似乎不能理解除了夫妻以外的关系。\n游惑和秦究的房间挨着，中间隔一道阳台。床上摊着礼服，还有一套特别华丽的大裙子。\n高齐拉开门探头：「还有裙子呢？挺好看的，谁穿呢？」\n他刚挤了一下眼，就发现屋里两位正用一种可怕的目光看着他，好像他只要再多呆几秒，大裙子就要套他脖子上了。\n高齐：「晚宴再见！」他一咕噜翻上阳台，逃回隔壁。",
+  choices: [
+    { text: "换上礼服，戴好面具", next: "castle_ball", fx: { score: 1 } },
+    { text: "趁换装，翻翻房间的抽屉", next: "castle_ball", fx: { score: 2, flag: { foundNote: true }, log: "抽屉里有一张旧纸：公爵的病，会传染。" } }
+  ]
+},
+castle_ball: {
+  loc: "古堡 · 晚宴大厅",
+  bg: "ballroom",
+  who: "公爵", whoClass: "npc",
+  text: function(s){
+    return "一对对宾客穿着礼服、戴着面具从长廊走下来，好像时空已然错乱，古堡里都是旧世纪的贵族。\n游惑扶着石壁等人，面具遮住他上半张脸，花纹繁复华丽，和下半张脸的冷淡唇角反差强烈。秦究推门出来，脚步一顿。\n公爵老爷坐在长桌尽头，戴着金色面具，嗓音温和得发腻：\n「欢迎，我亲爱的客人们。我只有一个小小的心愿——」他抬了抬手，「请每一位客人，今晚把手伸给我看一看。」" +
+      (s.flags.foundNote ? "\n你想起抽屉里那张纸：公爵的病，会传染。" : "");
+  },
+  hint: "公爵的要求不能违背。可「伸手给他看」，没说要让他碰。",
+  choices: [
+    { text: "伸出手，但隔着手套，保持一臂距离", next: "castle_plague", fx: { score: 3, log: "满足要求，没被碰到。" } },
+    { text: "把手放进公爵掌心", next: "castle_plague", fx: { hp: -20, flag: { infected: true }, log: "公爵的手冰得像尸体。你的指尖开始发黑。" } },
+    { text: "「不给。」", next: "castle_plague", fx: { hp: -30, viol: 1, log: "违背公爵要求 · 整组处罚。" } }
+  ]
+},
+castle_plague: {
+  loc: "古堡 · 病房",
+  bg: "ballroom",
+  who: "高齐", whoClass: "npc",
+  text: function(s){
+    return "深夜，古堡最深处有一间病房。床上的人裹在华丽的被褥里，咳得像要把肺咳出来。\n高齐压低声音：「黑死病。这个『糟糕时代』，说的就是瘟疫。」\n男仆在门口笑眯眯：「被传染可是很可怕的一件事，会死哦。」\n" +
+      (s.flags.infected ? "你低头，指尖的黑一直爬到了手腕。" : "") +
+      "\n另一边，有个男考生被公爵请进了书房，再出来时，他戴着自己的脸——却不是他自己。他的女朋友还不知道。";
+  },
+  hint: "考试结束条件藏在病人身上：「病人痊愈」。被传染的人越多，公爵越高兴。",
+  choices: [
+    { text: "用酒和布给病人降温、隔离", next: "castle_prank", fx: { score: 3, flag: { nursed: true }, log: "照料病人 · 得分。" } },
+    { text: "去提醒那个男考生的女朋友", next: "castle_prank", fx: { score: 2, flag: { warnedGirl: true }, log: "你把她拉离了书房门口。" } },
+    { text: "离病房越远越好", next: "castle_prank", fx: { hp: -25, log: "你在走廊里迷了路，撞上了巫师的魔法阵。" } }
+  ]
+},
+castle_prank: {
+  loc: "古堡 · 恶作剧",
+  bg: "ballroom",
+  who: "秦究", whoClass: "qj", face: "qjx",
+  text: "第二天，公爵的要求一个比一个刁钻：陪他下棋，陪他打猎，陪他「客串一个反派」。\n游惑和秦究照单全收——收得公爵脸都绿了。让下棋，就把他杀得片甲不留；让打猎，就把他的猎犬全放了；让客串反派，秦究演得比公爵还像公爵。\n公爵差点气到去世。\n秦究冲你挑眉：「他只是来引诱我们犯点小错的，没想到把自己搭进去了。」\n游惑：「继续。」",
+  choices: [
+    { text: "加入：公爵让你敬酒，你就敬他一整瓶", next: "castle_kill", fx: { score: 3, yh: 1, qj: 1, log: "恶意刷分。" } },
+    { text: "在一边记下公爵每个要求的漏洞", next: "castle_kill", fx: { score: 2, flag: { dukeNotes: true } } }
+  ]
+},
+castle_kill: {
+  loc: "古堡 · 公爵的心脏",
+  bg: "castle",
+  radio: "检测到得分项。",
+  who: "系统", whoClass: "sys",
+  flash: true,
+  text: "第三夜，公爵终于撕下了面具。面具后面是一张又一张缝上去的脸——那些客人的脸。\n他要客人们「把头借给我」。巫师的魔法阵在地板上亮起来。\n游惑一刀，秦究一刀，高齐举着烛台冲上去。\n【公爵心脏停止跳动。】\n【刺杀公爵共计9分，按出力比例分配。最后1刀共计1分。】\n可病房里，那个人还在咳。",
+  hint: "公爵死了，题没结束：考试要的是「病人痊愈」。",
+  choices: [
+    { text: "抢上去补最后一刀", next: "castle_cure", fx: { score: 1, viol: 1, hp: -10, log: "最后1刀：1分。溅了一身血。" } },
+    { text: "去病房，翻公爵书房里的药方", next: "castle_cure", fx: { score: 3, flag: { recipe: true } } },
+    { text: "站在魔法阵中间帮忙按住公爵", next: "castle_cure", fx: { hp: -50, log: "魔法阵的光切过你的脖子。差一点。" } }
+  ]
+},
+castle_cure: {
+  loc: "古堡 · 黎明",
+  bg: "castle",
+  radio: "病人痊愈，考生交卷，本场考试结束。",
+  who: "系统", whoClass: "sys",
+  text: function(s){
+    return "天快亮时，病人的烧退了。\n【病人痊愈，考生交卷，本场考试结束。】\n那个被公爵穿上脸的男考生，在回溯里活了过来。他睁眼第一句话是女朋友的名字。" +
+      (s.flags.warnedGirl ? "\n他女朋友哭着抱住了你——昨晚，是你把她从书房门口拉开的。" : "") +
+      "\n【B级及以上考生顺利进入下一轮考试，马车已在考区就位。】\n【开始清算最终惩罚与奖励。】";
+  },
+  choices: [
+    { text: "清算", next: "castle_bench", if: { minViol: 1 } },
+    { text: "清算", next: "castle_draw", if: { maxViol: 0 } }
+  ]
+},
+castle_bench: {
+  loc: "监考处 · 禁闭室外长椅",
+  bg: "jinbi",
+  radio: "警告，单间禁闭室人数上限为5，超额违规。",
+  who: "系统", whoClass: "sys",
+  fx: { flag: { servedJinbi2: true }, clock: 180 },
+  text: "违规的考生被一起送到了监考处。\n【考生庞安、孟岑晨、李昊、张锐、徐欣欣依次进入2号禁闭室。】\n【考生秦究、游惑、高齐、赵鸿请等待。】\n【其余违规考生应当在禁闭室外长椅上耐心等待，不得嬉闹喧哗。】\n于是你和三位大佬并排坐在长椅上，像等着叫号。\n高齐：「我考了这么多年，第一次排队等禁闭。」\n秦究：「考生关禁闭能合并么？帮忙把我关到隔壁。」",
+  choices: [
+    { text: "憋住不笑——不得嬉闹喧哗", next: "castle_memory", fx: { score: 1 } },
+    { text: "笑出声", next: "castle_memory", fx: { qj: 1, hp: -5, log: "系统记了一笔：嬉闹喧哗。" } }
+  ]
+},
+castle_memory: {
+  loc: "监考处 · 记忆",
+  bg: "system",
+  who: "系统", whoClass: "sys",
+  text: "长椅前的屏幕忽然闪了一下，播出一段很旧的记录——不知道是故障，还是有人故意的。\n【监考官A，为什么你从禁闭室出来要洗澡？】\n【这是我的职责所在，也是我的能力所在，最重要的是符合规定。】\n【你还没有回答，为什么从禁闭室里出来要洗澡？】\n画面里的人戴着墨镜，没再说话。\n长椅上，游惑的脸一点一点冷下去，耳根却红了。秦究盯着屏幕，嘴角压都压不住。",
+  choices: [
+    { text: "假装在看天花板", next: "castle_draw", fx: { yh: 1 } },
+    { text: "看秦究", next: "castle_draw", fx: { qj: 1, flag: { sawShower: true } } }
+  ]
+},
+castle_draw: {
+  loc: "古堡 · 抽签",
+  bg: "casino",
+  radio: "考生游惑使用掉一次抽签权！！",
+  who: "系统", whoClass: "sys",
+  text: "【抽到保送牌，意味着考生既有毋庸置疑的能力，又有令人艳羡的运气。一张保送牌可以让一位考生免除剩余所有考试。】\n全场哗然。锦鲤游惑，一把抽到了保送。\n于闻：「哥你直接走吧！」\n游惑把牌翻来覆去看了两遍，揣进兜里，没说用不用。\n轮到你。系统的签筒在面前转。",
+  choices: [
+    { text: "抽一张", next: "casino", roll: { p: 0.5,
+      win:  { fx: { hints: 1, log: "抽到：监考官的帮助（求助牌）。" }, stamp: "求助" },
+      lose: { fx: { inv: "组队卡", log: "抽到：组队卡。" }, stamp: "组队" } } }
+  ]
+},
+casino: {
+  loc: "考生休息处 · 赌场",
+  bg: "casino",
+  radio: "休息处开放。本处支持以分数下注。",
+  who: "",
+  art: "shop",
+  shop: SHOP_CASINO,
+  enter: function(s){ if (!s.flags.casinoHeal) { s.flags.casinoHeal = true; s.hp = Math.min(100, s.hp + 35); } },
+  text: function(s){
+    var t = "这一处休息处是个赌场。筹码、轮盘、绿呢台，空气里一股甜腻的酒味。\n";
+    t += s.flags.skipRetake ? "你在这里等了好几天，才等到游惑他们从重考考场回来。秦究一进门就四下找人：「我等人来借火。」\n" : "秦究在吧台边坐下，冲游惑伸手：「我等人来借火。」\n";
+    t += "游惑在轮盘边站了五分钟，赢光了一张台子的筹码——论锦鲤A的正确使用方法。\n于闻在一旁看得两眼发直。";
+    return t;
+  },
+  choices: [
+    { text: "押 4 分在红色上", next: "casino", if: { minScore: 4, noflag: "betDone" }, roll: { p: 0.5,
+      win:  { fx: { score: 4, flag: { betDone: true }, log: "红色。赢了 4 分。" } },
+      lose: { fx: { score: -4, flag: { betDone: true }, log: "黑色。输了 4 分。" } } } },
+    { text: "请游惑帮你押一把", next: "casino", if: { minYh: 4, noflag: "betDone" }, fx: { score: 8, yh: 1, flag: { betDone: true }, log: "锦鲤附体，赢了 8 分。" } },
+    { text: "给秦究借个火", next: "casino_fire", if: { noflag: "casinoFire" } },
+    { text: "离开赌场，去下一场", next: "math_in" }
+  ]
+},
+casino_fire: {
+  loc: "赌场 · 吧台",
+  bg: "casino",
+  who: "秦究", whoClass: "qj", face: "qjx",
+  fx: { flag: { casinoFire: true } },
+  text: function(s){
+    return (s.inv.indexOf("打火机") >= 0 ? "你把打火机递过去。" : "你从吧台摸来一盒火柴，划着递过去。") + "秦究低头点了烟，火光把他的眼睛照亮了一下。\n「谢了。」他吐出一口烟，看向轮盘边的游惑，「以前也有个人，总被我借火。」\n「后来呢？」\n「后来我忘了是谁。」他笑了一下，「不过最近，好像又想起来一点。」" +
+      (s.inv.indexOf("组队卡") >= 0 ? "\n他瞥见你兜里露出来的卡角：「组队卡？留着。下一场，八个人一组，正好。」" : "");
+  },
+  choices: [
+    { text: "「你喜欢他。」", next: "casino", fx: { qj: 2, log: "秦究没否认。" } },
+    { text: "什么都不说，回赌桌", next: "casino", fx: { qj: 1 } }
+  ]
+}
+});

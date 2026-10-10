@@ -87,6 +87,7 @@
       </g>
       <rect y="0" width="1600" height="900" fill="url(#cs-haze)" opacity=".5"/>
     </svg>
+    <div id="scene-art" aria-hidden="true"><div class="art-layer"></div><div class="art-layer"></div></div>
     <canvas id="fx" aria-hidden="true"></canvas>
     <div class="grade" aria-hidden="true"></div>
     <div class="vignette" aria-hidden="true"></div>
@@ -143,6 +144,8 @@
       </div>
 
       <div class="cover-tools">
+        <button class="cover-tool" id="btn-gallery" title="已解锁的结局与尾声">结局图鉴</button>
+        <button class="cover-tool" id="btn-recap" title="最近一次考试的选择记录">剧情回顾</button>
         <button class="cover-tool" id="btn-replay" title="重播开场广播">重听广播</button>
         <button class="cover-tool sound-toggle" aria-pressed="false" title="环境音（默认静音）">声音：关</button>
       </div>
@@ -156,7 +159,7 @@
         <div class="row"><span>考生姓名</span><input id="name-in" maxlength="8" placeholder="填写真实姓名" /></div>
         <div class="row"><span>准考证号</span><span id="ticket-no">——</span></div>
         <div class="row"><span>身份</span><span>考生 · 真身入场</span></div>
-        <div class="row"><span>科目安排</span><span>物理 / 外语 / 历史</span></div>
+        <div class="row"><span>科目安排</span><span>3 + 1 + 1（物理 / 外语 / 历史 / 数学 / 语文）</span></div>
         <div class="seal">准考</div>
         <div class="btns" style="margin-top:22px">
           <button class="btn red" id="btn-enter">确认入场</button>
@@ -185,8 +188,12 @@
         <div class="loc" id="loc"></div>
         <div class="radio" id="radio"></div>
         <div class="art" id="art"></div>
-        <div class="who" id="who"></div>
+        <div class="who-row" id="who-row">
+          <div class="face" id="face" hidden></div>
+          <div class="who-wrap"><div class="who" id="who"></div><div class="who-tag" id="who-tag"></div></div>
+        </div>
         <div class="text" id="text" aria-live="polite"></div>
+        <div class="hintbox" id="hintbox" hidden></div>
       </div>
       <div class="choices" id="choices"></div>
       <aside class="side">
@@ -204,6 +211,10 @@
           <h3>物资 / 卡片</h3>
           <div class="card" id="inv">无</div>
         </div>
+        <div class="side-links">
+          <button class="btn ghost small" id="side-recap">剧情回顾</button>
+          <button class="btn ghost small" id="side-gallery">结局图鉴</button>
+        </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <h3>系统记录</h3>
           <div class="log" id="log"></div>
@@ -211,6 +222,19 @@
       </aside>
     </div>
 
+    <div id="panel" class="panel hidden" role="dialog" aria-modal="true" aria-labelledby="panel-title">
+      <div class="panel-box">
+        <div class="panel-head">
+          <span id="panel-title" class="panel-title">档案室</span>
+          <span class="panel-tabs" role="tablist">
+            <button class="ptab" data-tab="gallery" role="tab">结局图鉴</button>
+            <button class="ptab" data-tab="recap" role="tab">剧情回顾</button>
+          </span>
+          <button class="panel-x" id="panel-x" title="关闭（Esc）">关闭</button>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+      </div>
+    </div>
     <div id="stamp" class="stamp-big hidden"></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
@@ -224,6 +248,12 @@
   <script src="scenes_part1.js"></script>
   <script src="scenes_part2.js"></script>
   <script src="scenes_part3.js"></script>
+  <script src="scenes_part4.js"></script>
+  <script src="scenes_part5.js"></script>
+  <script src="scenes_part6.js"></script>
+  <script src="scenes_part7.js"></script>
+  <script src="art.js"></script>
+  <script src="audio.js"></script>
   <script src="fx.js"></script>
   <script src="game.js"></script>
   <script src="cover.js"></script>

@@ -3,12 +3,15 @@
   const SAVE_KEY = "qqgk-save";
   const END_KEY = "qqgk-endings";
   const ENDS = window.ENDINGS || {};
+  const endName = (id) => { const e = ENDS[id]; return e ? (typeof e === "string" ? e : e.name) : ""; };
+  const ART = window.QQART || { portrait: () => "", faceFor: () => null, people: {} };
+  const SND = window.QQAUDIO || { ui() {}, heartbeat() {} };
 
   const state = {
     name: "", ticket: "", score: 0, viol: 0, hp: 100,
     inv: [], flags: {}, yh: 0, qj: 0,
     subj: "待定", exam: "入场", scene: "boot",
-    clock: 17 * 60 + 30, log: []
+    clock: 17 * 60 + 30, log: [], hints: 0, trail: []
   };
 
   let typing = false, skipType = false, typeToken = 0, timer = null, choiceMap = [];
@@ -31,6 +34,8 @@
       state.flags = d.flags || {};
       state.inv = d.inv || [];
       state.log = d.log || [];
+      state.trail = d.trail || [];
+      state.hints = d.hints || 0;
       return true;
     } catch (e) { return false; }
   }
@@ -49,6 +54,7 @@
     const t = $("#toast");
     t.textContent = msg;
     t.classList.add("on");
+    SND.ui("notice");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove("on"), 2200);
   }
@@ -92,12 +98,14 @@
     $("#h-hp").textContent = state.hp;
     $("#h-hp").classList.toggle("low", state.hp <= 30);
     const cur = SCENES[state.scene];
-    $("#app").classList.toggle("danger", state.hp <= 30 && !$("#screen-game").classList.contains("hidden") && !(cur && cur.ending));
+    if (!$("#screen-game").classList.contains("hidden")) setDanger(state.hp <= 30 && !(cur && cur.ending));
     $("#h-clock").textContent = hhmm();
     $("#s-subj").textContent = state.subj;
     $("#s-exam").textContent = state.exam;
     $("#hp-bar").style.width = Math.max(0, Math.min(100, state.hp)) + "%";
-    $("#inv").textContent = state.inv.length ? state.inv.join(" · ") : "无";
+    const invs = state.inv.slice();
+    if (state.hints > 0) invs.unshift("求助牌 ×" + state.hints);
+    $("#inv").textContent = invs.length ? invs.join(" · ") : "无";
     const tags = [];
     if (state.flags.wroteJie) tags.push("会写「解」");
     if (state.flags.fullInvig) tags.push("全程监考");
@@ -106,6 +114,9 @@
     if (state.flags.pass1) tags.push("物理及格");
     if (state.flags.pass2) tags.push("外语及格");
     if (state.flags.pass3) tags.push("历史及格");
+    if (state.flags.knowA) tags.push("知晓考官A");
+    if (state.flags.team8) tags.push("八人小组");
+    if (state.flags.pass4) tags.push("数学及格");
     $("#tags").innerHTML = tags.map((t) => `<span class="tag">${t}</span>`).join("");
     $("#log").innerHTML = state.log.map((x) => `<div>${esc(x)}</div>`).join("");
   }
@@ -126,6 +137,8 @@
     if (fx.qj) state.qj += fx.qj;
     if (fx.flag) Object.assign(state.flags, fx.flag);
     if (fx.inv && !state.inv.includes(fx.inv)) state.inv.push(fx.inv);
+    if (fx.drop) state.inv = state.inv.filter((x) => x !== fx.drop);
+    if (fx.hints) state.hints = Math.max(0, (state.hints || 0) + fx.hints);
     if (fx.subj) state.subj = fx.subj;
     if (fx.exam) state.exam = fx.exam;
     if (fx.clock) state.clock += fx.clock;
@@ -201,6 +214,7 @@
     if (c.minViol != null && state.viol < c.minViol) return false;
     if (c.maxViol != null && state.viol > c.maxViol) return false;
     if (c.or && !c.or.some(cond)) return false;
+    if (c.minHints != null && (state.hints || 0) < c.minHints) return false;
     return true;
   }
 
@@ -243,6 +257,12 @@
       d.textContent = typeof sc.paper === "function" ? sc.paper(state) : sc.paper;
       art.appendChild(d);
     }
+    if (sc.art === "svg") {
+      const d = document.createElement("div");
+      d.className = "svg-q";
+      d.innerHTML = typeof sc.svg === "function" ? sc.svg(state) : sc.svg;
+      art.appendChild(d);
+    }
     if (sc.art === "shop") {
       const wrap = document.createElement("div");
       wrap.className = "shop";
@@ -254,9 +274,9 @@
         const left = document.createElement("span");
         left.innerHTML = `${it.name}<br><small>${it.desc}</small>`;
         const btn = document.createElement("button");
-        const owned = () => it.inv && state.inv.includes(it.inv);
+        const owned = () => (it.inv && state.inv.includes(it.inv)) || (it.hints && it.max && (state.hints || 0) >= it.max);
         rows.push(() => {
-          btn.textContent = owned() ? "已兑换" : it.cost + " 分";
+          btn.textContent = owned() ? (it.hints ? "已达上限" : "已兑换") : it.cost + " 分";
           btn.disabled = owned();
         });
         btn.onclick = () => {
@@ -268,6 +288,8 @@
           if (it.hp) state.hp = Math.min(100, state.hp + it.hp);
           if (it.viol) state.viol = Math.max(0, state.viol + it.viol);
           if (it.inv && !state.inv.includes(it.inv)) state.inv.push(it.inv);
+          if (it.hints) state.hints = (state.hints || 0) + it.hints;
+          SND.ui("card");
           log("休息区兑换：" + it.name);
           toast("兑换成功：" + it.name);
           refresh();
@@ -283,16 +305,51 @@
     }
   }
 
+  /* 求助牌：标出每个选项的风险 */
+  function riskOf(c) {
+    const fx = c.fx || {};
+    if (c.dead) return ["死", "deadly"];
+    if (fx.hp != null && fx.hp <= -30) return ["重伤", "deadly"];
+    if (fx.viol > 0) return ["违规", "warn"];
+    if (fx.hp != null && fx.hp < 0) return ["受伤", "warn"];
+    if (c.roll) return ["看运气", "warn"];
+    return ["稳", "safe"];
+  }
+  function hintAvailable(sc) {
+    if (sc.ending || !sc.choices) return false;
+    const vis = sc.choices.filter((c) => cond(c.if));
+    return !!sc.hint || vis.some((c) => riskOf(c)[1] !== "safe");
+  }
+  function useHint() {
+    const sc = SCENES[state.scene];
+    if (!sc || !(state.hints > 0) || state.flags["hint:" + state.scene]) return;
+    state.hints -= 1;
+    state.flags["hint:" + state.scene] = true;
+    SND.ui("card");
+    log("使用求助牌 · 监考官的帮助");
+    showHint(sc);
+    renderChoices(sc);
+    renderHud();
+    save();
+  }
+  function showHint(sc) {
+    const h = $("#hintbox");
+    h.hidden = false;
+    h.innerHTML = `<b>监考官的帮助</b>${esc(sc.hint || "这一题没什么陷阱。照你自己的判断来。")}`;
+  }
   function renderChoices(sc) {
     const box = $("#choices");
     box.innerHTML = "";
     choiceMap = [];
+    const hinted = !!state.flags["hint:" + state.scene];
     (sc.choices || []).forEach((c) => {
       if (!cond(c.if)) return;
       const b = document.createElement("button");
       b.className = "choice";
       const k = choiceMap.length + 1;
-      b.innerHTML = `<kbd>${k}</kbd>${c.text}`;
+      let badge = "";
+      if (hinted) { const r = riskOf(c); badge = `<span class="risk ${r[1]}">${r[0]}</span>`; }
+      b.innerHTML = `<kbd>${k}</kbd><span class="ct">${c.text}</span>${badge}`;
       b.onclick = () => pick(c);
       box.appendChild(b);
       choiceMap.push(c);
@@ -307,11 +364,31 @@
       box.appendChild(b);
       choiceMap.push(c);
     }
+    if (!hinted && state.hints > 0 && hintAvailable(sc)) {
+      const hb = document.createElement("button");
+      hb.className = "choice hint-btn";
+      hb.innerHTML = `<kbd>H</kbd><span class="ct">使用求助牌（剩 ${state.hints} 张）：请监考官给一句提示</span>`;
+      hb.onclick = useHint;
+      box.appendChild(hb);
+    }
   }
 
   function pick(c) {
     if (typing) { skipType = true; return; }
     if (c.needSeat && !state.flags.pickedSeat) { log("先在长桌上点一个座位。"); toast("先在长桌上点一个座位。"); return; }
+    const from = SCENES[state.scene];
+    SND.ui("click");
+    if (from && !from.nosave && !from.ending) {
+      state.trail.push({ s: state.subj, at: from.loc || "", c: c.text, t: hhmm().slice(5) });
+      if (state.trail.length > 240) state.trail.shift();
+    }
+    if (c.roll) {
+      const out = Math.random() < (c.roll.p == null ? 0.5 : c.roll.p) ? c.roll.win : c.roll.lose;
+      if (out.fx) apply(out.fx);
+      if (out.stamp) showStamp(out.stamp);
+      go(out.next || c.next);
+      return;
+    }
     if (c.fx) apply(c.fx);
     if (c.stamp) showStamp(c.stamp);
     if (c.flash) flash();
@@ -320,7 +397,8 @@
   }
 
   function showTitle() {
-    $("#app").classList.remove("side-open", "danger");
+    $("#app").classList.remove("side-open");
+    setDanger(false);
     vis("#screen-game", false);
     vis("#hud", false);
     vis("#screen-title", true);
@@ -328,9 +406,9 @@
     $("#lamp").hidden = true;
     setBg("cover");
     choiceMap = [];
-    const got = getEndings();
+    const got = getEndings().filter((g) => ENDS[g]);
     const total = Object.keys(ENDS).length;
-    $("#endings").textContent = got.length && total ? `已达成结局 ${got.filter((g) => ENDS[g]).length} / ${total}：` + got.filter((g) => ENDS[g]).map((g) => ENDS[g]).join("、") : "";
+    $("#endings").textContent = got.length && total ? `已达成结局 ${got.length} / ${total}：` + got.map(endName).join("、") : "";
     $("#btn-cont").classList.toggle("dim", !hasSave());
   }
 
@@ -345,15 +423,41 @@
     FX.setScene(bg);
   }
 
-  function go(id) {
+  function setDanger(on) {
+    const app = $("#app");
+    if (app.classList.contains("danger") === on) return;
+    app.classList.toggle("danger", on);
+    SND.heartbeat(on);
+  }
+
+  function renderWho(sc) {
+    const who = $("#who"), face = $("#face"), tag = $("#who-tag");
+    who.textContent = sc.who || "";
+    who.className = "who " + (sc.whoClass || "");
+    const key = sc.face || ART.faceFor(sc.who);
+    const p = key && ART.people[key];
+    if (p && !sc.ending) {
+      face.innerHTML = ART.portrait(key);
+      face.className = "face f-" + key;
+      face.hidden = false;
+      tag.textContent = p.tag || "";
+    } else {
+      face.hidden = true; face.innerHTML = ""; tag.textContent = "";
+    }
+    $("#who-row").hidden = !sc.who;
+  }
+
+  function go(id, resume) {
     if (id === "title") { showTitle(); return; }
     if (id === "new") { newGame(true); return; }
+    if (id === "gallery" || id === "recap") { openPanel(id); return; }
     const sc = SCENES[id];
     if (!sc) { console.error("missing scene", id); log("系统错误：考场丢失 " + id); toast("系统错误：考场丢失 " + id); return; }
+    const changed = state.scene !== id;
     if (!sc.nosave) state.scene = id;
-    if (sc.fx) apply(sc.fx);
+    if (sc.fx && !resume) apply(sc.fx);      // 读档续考时不重复结算场景效果
     if (sc.enter) sc.enter(state);
-    if (sc.stamp) showStamp(sc.stamp);
+    if (sc.stamp && !resume) showStamp(sc.stamp);
     if (sc.flash) flash();
     if (state.hp <= 0 && id !== "dead") { go("dead"); return; }
     if (sc.ending) markEnding(sc.ending);
@@ -367,6 +471,8 @@
     setBg(sc.bg || "title");
     if (hurt || id === "dead") { FX.shake(state.hp <= 30 || id === "dead"); }
     hurt = false;
+    setDanger(state.hp <= 30 && !sc.ending);
+    if (changed || resume) SND.ui(sc.stamp ? "stamp" : "page");
     $("#lamp").hidden = !(sc.bg === "cabin");
     const stage = $(".stage");
     stage.classList.remove("fade");
@@ -375,9 +481,9 @@
     stage.scrollTop = 0;
     $("#loc").textContent = sc.loc || "";
     $("#radio").textContent = typeof sc.radio === "function" ? sc.radio(state) : (sc.radio || "");
-    const who = $("#who");
-    who.textContent = sc.who || "";
-    who.className = "who " + (sc.whoClass || "");
+    renderWho(sc);
+    $("#hintbox").hidden = true;
+    if (state.flags["hint:" + id]) showHint(sc);
     renderArt(sc);
     renderHud();
     $("#choices").innerHTML = "";
@@ -405,7 +511,7 @@
     Object.assign(state, {
       name: "", ticket: "", score: 0, viol: 0, hp: 100, inv: [],
       flags: {}, yh: 0, qj: 0, subj: "待定", exam: "入场",
-      scene: "boot", clock: 17 * 60 + 30, log: ["收音机滋啦作响。"]
+      scene: "boot", clock: 17 * 60 + 30, log: ["收音机滋啦作响。"], hints: 0, trail: []
     });
     state.ticket = "A-17-" + String(1000 + Math.floor(Math.random() * 9000));
     $("#ticket-no").textContent = state.ticket;
@@ -440,7 +546,7 @@
     if (!load()) { toast("无存档。请先领取准考证。"); return; }
     const id = SCENES[state.scene] ? state.scene : "boot";
     startClock();
-    go(id);
+    go(id, true);
   }
 
   /* 封面按钮：先盖章，再执行 */
@@ -453,6 +559,7 @@
     btn.classList.remove("stamped");
     void btn.offsetWidth;
     btn.classList.add("stamped");
+    SND.ui("stamp");
     setTimeout(() => {
       pressing = false;
       fn();
@@ -470,6 +577,13 @@
     if (!hasSave()) { nope(e.currentTarget, "无存档。请先领取准考证。"); return; }
     stampPress(e.currentTarget, cont);
   };
+  $("#btn-gallery").onclick = () => openPanel("gallery");
+  $("#btn-recap").onclick = () => openPanel("recap");
+  $("#side-gallery").onclick = () => openPanel("gallery");
+  $("#side-recap").onclick = () => openPanel("recap");
+  $("#panel-x").onclick = closePanel;
+  $("#panel").addEventListener("click", (e) => { if (e.target.id === "panel") closePanel(); });
+  document.querySelectorAll(".ptab").forEach((b) => { b.onclick = () => openPanel(b.dataset.tab); });
   $("#btn-rules").onclick = (e) => stampPress(e.currentTarget, () => go("rules_only"));
   $("#btn-back").onclick = () => showTitle();
   $("#btn-enter").onclick = enter;
@@ -483,6 +597,7 @@
 
   document.addEventListener("keydown", (e) => {
     if (modalOpen()) { if (e.key === "Escape") closeModal(); return; }
+    if (panelOpen()) { if (e.key === "Escape") { e.preventDefault(); closePanel(); } return; }
     if (e.key === "Escape") { $("#app").classList.remove("side-open"); return; }
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
     if ($("#screen-game").classList.contains("hidden")) return;
@@ -491,10 +606,62 @@
       return;
     }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if ((e.key === "h" || e.key === "H") && $(".hint-btn")) { e.preventDefault(); useHint(); return; }
     const n = parseInt(e.key, 10);
     if (n >= 1 && n <= 9 && choiceMap[n - 1]) { e.preventDefault(); pick(choiceMap[n - 1]); }
   });
 
+  /* ---------- 结局图鉴 / 剧情回顾 ---------- */
+  let panelReturn = null;
+  const panelOpen = () => !$("#panel").classList.contains("hidden");
+  function savedTrail() {
+    if (state.trail && state.trail.length) return { name: state.name, trail: state.trail };
+    try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); if (d && d.trail) return { name: d.name, trail: d.trail }; } catch (e) { /* ignore */ }
+    return { name: "", trail: [] };
+  }
+  function renderGallery() {
+    const got = getEndings();
+    const ids = Object.keys(ENDS);
+    const n = ids.filter((i) => got.includes(i)).length;
+    let h = `<p class="p-sum">已解锁 <b>${n}</b> / ${ids.length}。结局记录保存在本机浏览器中。</p><div class="g-grid">`;
+    ids.forEach((id, i) => {
+      const e = typeof ENDS[id] === "string" ? { name: ENDS[id] } : ENDS[id];
+      const on = got.includes(id);
+      h += `<div class="g-card ${on ? "on" : "locked"} g-${id}"><div class="g-no">No.${String(i + 1).padStart(2, "0")}</div>` +
+        `<div class="g-name">${on ? esc(e.name) : "？？？"}</div>` +
+        `<div class="g-epi">${on ? esc(e.epi || "") : "未解锁 · " + esc(e.hint || "")}</div>` +
+        (on ? `<div class="g-seal">${esc(e.name.slice(0, 2))}</div>` : `<div class="g-lock">封</div>`) + `</div>`;
+    });
+    return h + "</div>";
+  }
+  function renderRecap() {
+    const d = savedTrail();
+    if (!d.trail.length) return `<p class="p-sum">还没有考试记录。领取准考证后，你在每个考场做过的选择都会记在这里。</p>`;
+    let h = `<p class="p-sum">考生 <b>${esc(d.name || "—")}</b> 本轮共做出 <b>${d.trail.length}</b> 个选择。</p><ol class="r-list">`;
+    let last = null;
+    d.trail.forEach((x) => {
+      if (x.s !== last) { h += `<li class="r-subj">${esc(x.s)}</li>`; last = x.s; }
+      h += `<li class="r-item"><span class="r-at">${esc(x.at)}</span><span class="r-c">${esc(x.c)}</span></li>`;
+    });
+    return h + "</ol>";
+  }
+  function openPanel(tab) {
+    const p = $("#panel");
+    if (!panelOpen()) panelReturn = document.activeElement;
+    p.classList.remove("hidden");
+    $("#panel-title").textContent = tab === "gallery" ? "结局图鉴" : "剧情回顾";
+    document.querySelectorAll(".ptab").forEach((b) => { const on = b.dataset.tab === tab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
+    const body = $("#panel-body");
+    body.innerHTML = tab === "gallery" ? renderGallery() : renderRecap();
+    body.scrollTop = tab === "recap" ? body.scrollHeight : 0;
+    SND.ui("page");
+    setTimeout(() => $("#panel-x").focus(), 0);
+  }
+  function closePanel() {
+    $("#panel").classList.add("hidden");
+    if (panelReturn && panelReturn.focus) panelReturn.focus();
+  }
+
   showTitle();
-  window.QQGK = { go, state, save, cond, showTitle };
+  window.QQGK = { go, state, save, cond, showTitle, openPanel, closePanel, useHint };
 })();
