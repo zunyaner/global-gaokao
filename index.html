@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0908" />
+  <title>全球大型高危险性统一考试</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app" data-bg="cover">
+    <svg id="cover-scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="cs-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04060a"/><stop offset=".45" stop-color="#0c1320"/><stop offset=".7" stop-color="#1a2536"/><stop offset="1" stop-color="#26334a"/></linearGradient>
+        <radialGradient id="cs-moon" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#c8d6e6" stop-opacity=".35"/><stop offset=".35" stop-color="#9fb2c8" stop-opacity=".12"/><stop offset="1" stop-color="#9fb2c8" stop-opacity="0"/></radialGradient>
+        <linearGradient id="cs-mtn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4a5e"/><stop offset=".35" stop-color="#202b3a"/><stop offset="1" stop-color="#141b26"/></linearGradient>
+        <linearGradient id="cs-ridge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a2330"/><stop offset="1" stop-color="#0e141c"/></linearGradient>
+        <linearGradient id="cs-snow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6b80"/><stop offset=".3" stop-color="#3c4a5c"/><stop offset="1" stop-color="#151c26"/></linearGradient>
+        <linearGradient id="cs-haze" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fb2c8" stop-opacity="0"/><stop offset=".6" stop-color="#9fb2c8" stop-opacity=".13"/><stop offset="1" stop-color="#9fb2c8" stop-opacity="0"/></linearGradient>
+        <radialGradient id="cs-spill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffb35a" stop-opacity=".55"/><stop offset="1" stop-color="#ffb35a" stop-opacity="0"/></radialGradient>
+        <linearGradient id="cs-fig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1118"/><stop offset="1" stop-color="#05070a"/></linearGradient>
+        <filter id="cs-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
+        <filter id="cs-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2"/></filter>
+        <symbol id="pine" viewBox="0 0 40 100" preserveAspectRatio="none"><path d="M20 0 L29 26 L24 26 L35 52 L28 52 L40 86 L22 86 L22 100 L18 100 L18 86 L0 86 L12 52 L5 52 L16 26 L11 26Z"/></symbol>
+      </defs>
+      <rect width="1600" height="900" fill="url(#cs-sky)"/>
+      <circle cx="1330" cy="150" r="300" fill="url(#cs-moon)"/>
+      <circle cx="1330" cy="150" r="30" fill="#d8e2ec" opacity=".28" filter="url(#cs-soft)"/>
+      <path d="M0 540 L140 450 L230 480 L390 360 L520 440 L640 400 L760 470 L900 380 L1010 430 L1150 320 L1260 400 L1380 350 L1500 420 L1600 380 L1600 640 L0 640Z" fill="url(#cs-mtn)"/>
+      <path d="M390 360 L420 382 L404 380 L432 404 L520 440 L470 412 L440 392 Z M1150 320 L1182 348 L1164 344 L1196 372 L1260 400 L1212 370 L1188 352 Z M900 380 L930 402 L916 400 L950 418 L1010 430 L960 412 Z" fill="#c9d6e4" opacity=".22"/>
+      <rect y="470" width="1600" height="180" fill="url(#cs-haze)"/>
+      <g fill="#121a24"><use href="#pine" x="1138" y="523" width="23" height="54"/><use href="#pine" x="1147" y="533" width="24" height="57"/><use href="#pine" x="1266" y="534" width="19" height="44"/><use href="#pine" x="1317" y="551" width="17" height="40"/><use href="#pine" x="1554" y="541" width="18" height="42"/><use href="#pine" x="1520" y="527" width="22" height="52"/><use href="#pine" x="458" y="559" width="15" height="35"/><use href="#pine" x="1341" y="557" width="14" height="34"/><use href="#pine" x="1564" y="532" width="21" height="50"/><use href="#pine" x="1006" y="541" width="14" height="34"/><use href="#pine" x="1552" y="536" width="21" height="49"/><use href="#pine" x="1505" y="549" width="18" height="43"/><use href="#pine" x="1366" y="544" width="15" height="36"/><use href="#pine" x="673" y="550" width="16" height="37"/><use href="#pine" x="628" y="535" width="18" height="43"/><use href="#pine" x="1474" y="544" width="17" height="41"/><use href="#pine" x="1046" y="526" width="24" height="57"/><use href="#pine" x="1484" y="541" width="19" height="45"/><use href="#pine" x="974" y="553" width="13" height="31"/><use href="#pine" x="532" y="561" width="13" height="30"/><use href="#pine" x="515" y="545" width="19" height="44"/><use href="#pine" x="1015" y="546" width="17" height="40"/><use href="#pine" x="1011" y="524" width="22" height="54"/><use href="#pine" x="1021" y="543" width="16" height="37"/><use href="#pine" x="1294" y="541" width="19" height="45"/><use href="#pine" x="1276" y="526" width="24" height="57"/><use href="#pine" x="1087" y="540" width="19" height="45"/><use href="#pine" x="1191" y="542" width="18" height="44"/><use href="#pine" x="909" y="531" width="24" height="58"/><use href="#pine" x="1427" y="522" width="24" height="58"/><use href="#pine" x="1015" y="534" width="24" height="58"/><use href="#pine" x="471" y="550" width="14" height="34"/><use href="#pine" x="386" y="539" width="16" height="37"/><use href="#pine" x="1159" y="539" width="22" height="54"/><use href="#pine" x="490" y="537" width="22" height="51"/><use href="#pine" x="474" y="538" width="24" height="56"/><use href="#pine" x="573" y="524" width="25" height="59"/><use href="#pine" x="921" y="532" width="25" height="60"/><use href="#pine" x="501" y="542" width="18" height="43"/><use href="#pine" x="733" y="545" width="15" height="36"/><use href="#pine" x="1232" y="555" width="13" height="31"/><use href="#pine" x="866" y="551" width="13" height="31"/><use href="#pine" x="1102" y="531" width="19" height="45"/><use href="#pine" x="1569" y="541" width="23" height="54"/><use href="#pine" x="428" y="538" width="16" height="38"/><use href="#pine" x="1305" y="539" width="16" height="38"/><use href="#pine" x="837" y="534" width="24" height="57"/><use href="#pine" x="629" y="559" width="14" height="34"/><use href="#pine" x="1031" y="526" width="21" height="51"/><use href="#pine" x="364" y="533" width="21" height="51"/><use href="#pine" x="382" y="530" width="24" height="58"/><use href="#pine" x="1335" y="560" width="14" height="33"/><use href="#pine" x="375" y="528" width="23" height="56"/><use href="#pine" x="731" y="547" width="20" height="47"/><use href="#pine" x="641" y="552" width="14" height="34"/><use href="#pine" x="603" y="545" width="14" height="33"/><use href="#pine" x="358" y="545" width="15" height="36"/><use href="#pine" x="685" y="528" width="22" height="53"/><use href="#pine" x="943" y="547" width="15" height="35"/><use href="#pine" x="316" y="538" width="16" height="38"/></g>
+      <path d="M0 610 Q300 570 620 600 T1180 590 T1600 585 L1600 700 L0 700Z" fill="url(#cs-ridge)"/>
+      <g class="cs-mid">
+        <g fill="#0a0f16"><use href="#pine" x="761" y="549" width="27" height="65"/><use href="#pine" x="450" y="517" width="38" height="90"/><use href="#pine" x="432" y="511" width="37" height="88"/><use href="#pine" x="897" y="541" width="25" height="60"/><use href="#pine" x="875" y="492" width="46" height="109"/><use href="#pine" x="632" y="525" width="40" height="96"/><use href="#pine" x="839" y="481" width="50" height="118"/><use href="#pine" x="1412" y="528" width="31" height="74"/><use href="#pine" x="508" y="543" width="32" height="75"/><use href="#pine" x="581" y="521" width="39" height="93"/><use href="#pine" x="815" y="509" width="38" height="91"/><use href="#pine" x="438" y="546" width="29" height="68"/><use href="#pine" x="886" y="537" width="32" height="75"/><use href="#pine" x="917" y="543" width="31" height="74"/><use href="#pine" x="1218" y="541" width="30" height="71"/><use href="#pine" x="997" y="504" width="47" height="112"/><use href="#pine" x="706" y="482" width="50" height="119"/><use href="#pine" x="868" y="497" width="44" height="104"/><use href="#pine" x="964" y="556" width="24" height="58"/><use href="#pine" x="1293" y="527" width="39" height="92"/><use href="#pine" x="742" y="512" width="42" height="100"/><use href="#pine" x="914" y="511" width="46" height="110"/><use href="#pine" x="938" y="501" width="41" height="98"/><use href="#pine" x="1215" y="525" width="41" height="97"/><use href="#pine" x="1367" y="534" width="31" height="73"/><use href="#pine" x="1184" y="553" width="24" height="56"/><use href="#pine" x="572" y="537" width="26" height="63"/><use href="#pine" x="1304" y="541" width="27" height="63"/><use href="#pine" x="834" y="488" width="47" height="112"/><use href="#pine" x="909" y="528" width="38" height="91"/><use href="#pine" x="1356" y="494" width="47" height="111"/><use href="#pine" x="870" y="541" width="33" height="78"/><use href="#pine" x="1535" y="537" width="27" height="65"/><use href="#pine" x="648" y="539" width="29" height="70"/><use href="#pine" x="689" y="553" width="23" height="55"/><use href="#pine" x="811" y="529" width="39" height="92"/><use href="#pine" x="1204" y="524" width="37" height="89"/><use href="#pine" x="1193" y="561" width="25" height="59"/><use href="#pine" x="1308" y="505" width="47" height="112"/><use href="#pine" x="842" y="520" width="34" height="81"/><use href="#pine" x="443" y="544" width="25" height="59"/><use href="#pine" x="562" y="522" width="32" height="77"/><use href="#pine" x="367" y="536" width="27" height="65"/><use href="#pine" x="812" y="562" width="24" height="57"/><use href="#pine" x="546" y="535" width="30" height="71"/><use href="#pine" x="811" y="555" width="26" height="63"/><use href="#pine" x="1574" y="524" width="36" height="85"/><use href="#pine" x="472" y="545" width="26" height="62"/><use href="#pine" x="680" y="493" width="46" height="109"/><use href="#pine" x="384" y="494" width="49" height="117"/><use href="#pine" x="540" y="508" width="38" height="90"/><use href="#pine" x="999" y="500" width="50" height="119"/><use href="#pine" x="1214" y="535" width="30" height="72"/><use href="#pine" x="562" y="506" width="44" height="105"/><use href="#pine" x="1314" y="527" width="32" height="76"/><use href="#pine" x="1345" y="499" width="50" height="119"/><use href="#pine" x="1341" y="508" width="45" height="108"/><use href="#pine" x="638" y="518" width="37" height="89"/><use href="#pine" x="403" y="548" width="24" height="57"/><use href="#pine" x="675" y="521" width="42" height="100"/><use href="#pine" x="901" y="506" width="49" height="116"/><use href="#pine" x="1529" y="525" width="33" height="79"/><use href="#pine" x="643" y="535" width="28" height="68"/><use href="#pine" x="1455" y="500" width="46" height="110"/></g>
+        <!-- 猎人小屋 -->
+        <g class="cabin" transform="translate(-100 0)">
+          <ellipse class="win-spill" cx="1122" cy="652" rx="150" ry="18" fill="url(#cs-spill)"/>
+          <rect x="1056" y="588" width="134" height="62" fill="#090c11"/>
+          <polygon points="1042,594 1123,538 1204,594" fill="#07090d"/>
+          <polygon points="1038,596 1123,534 1208,596 1199,598 1123,543 1047,598" fill="#dfe8f0" opacity=".78"/>
+          <rect x="1166" y="548" width="12" height="32" fill="#07090d"/>
+          <rect x="1163" y="545" width="18" height="5" fill="#dfe8f0" opacity=".7"/>
+          <path class="smoke" d="M1172 540 C1160 520 1186 505 1170 486 C1158 470 1182 456 1168 436" fill="none" stroke="#9fb2c8" stroke-width="7" stroke-linecap="round" opacity=".12" filter="url(#cs-soft)"/>
+          <g class="win-glow" filter="url(#cs-glow)" fill="#ff9a3c"><rect x="1068" y="606" width="26" height="20"/><rect x="1152" y="606" width="26" height="20"/><rect x="1112" y="614" width="22" height="34" opacity=".5"/></g>
+          <g class="win"><rect x="1070" y="608" width="22" height="16" fill="#ffbf6a"/><rect x="1154" y="608" width="22" height="16" fill="#ffbf6a"/></g>
+          <g stroke="#090c11" stroke-width="2"><line x1="1081" y1="608" x2="1081" y2="624"/><line x1="1070" y1="616" x2="1092" y2="616"/><line x1="1165" y1="608" x2="1165" y2="624"/><line x1="1154" y1="616" x2="1176" y2="616"/></g>
+          <rect x="1114" y="616" width="18" height="34" fill="#140d08"/>
+          <rect class="win" x="1114" y="616" width="2" height="34" fill="#ffb35a" opacity=".55"/>
+          <rect x="1050" y="646" width="146" height="6" fill="#dfe8f0" opacity=".35"/>
+        </g>
+      </g>
+      <path d="M0 660 Q420 628 860 652 T1600 640 L1600 900 L0 900Z" fill="url(#cs-snow)"/>
+      <path d="M0 660 Q420 628 860 652 T1600 640" fill="none" stroke="#c9d6e4" stroke-opacity=".18" stroke-width="2"/>
+      <g class="cs-front">
+        <g fill="#0b1018" opacity=".35"><ellipse cx="1048" cy="892" rx="10.0" ry="3.5"/><ellipse cx="1087" cy="892" rx="9.5" ry="3.3"/><ellipse cx="1078" cy="884" rx="9.0" ry="3.2"/><ellipse cx="1117" cy="876" rx="8.5" ry="3.0"/><ellipse cx="1108" cy="868" rx="8.0" ry="2.9"/><ellipse cx="1147" cy="859" rx="7.5" ry="2.7"/><ellipse cx="1138" cy="851" rx="7.0" ry="2.5"/><ellipse cx="1177" cy="843" rx="6.5" ry="2.4"/><ellipse cx="1168" cy="835" rx="6.0" ry="2.2"/></g>
+        <ellipse cx="1214" cy="878" rx="130" ry="12" fill="#05070a" opacity=".45" filter="url(#cs-soft)"/>
+        <!-- 秦究（左，较高，长风衣，手插衣兜）：背影 -->
+        <g class="fig fig-qj" transform="translate(1126 568)">
+          <path d="M24 248 L21 312 L37 312 L41 248Z M55 248 L59 312 L75 312 L73 248Z" fill="#06080b"/>
+          <path d="M34 48 C40 45 56 45 62 48 C74 52 86 56 92 64 C96 70 96 80 95 92 L97 150 C97 160 92 166 88 166 L86 168 L89 252 C70 257 28 257 7 252 L10 168 L8 166 C4 166 -1 160 -1 150 L1 92 C0 80 0 70 4 64 C10 56 22 52 34 48Z" fill="url(#cs-fig)"/>
+          <path d="M48 196 L48 254" stroke="#1a222e" stroke-width="1.5"/>
+          <path d="M14 108 Q22 140 20 166 M82 108 Q74 140 76 166" fill="none" stroke="#141b25" stroke-width="2"/>
+          <g transform="rotate(6 48 40)">
+            <rect x="41" y="38" width="14" height="13" fill="#0b0f15"/>
+            <ellipse cx="48" cy="25" rx="16" ry="20" fill="#0b0f15"/>
+            <path d="M32 24 Q32 4 48 4 Q64 4 64 24 Q60 13 48 13 Q36 13 32 24Z" fill="#0e131b"/>
+            <path d="M32 24 Q32 4 48 4 Q64 4 64 24" fill="none" stroke="#ffcf96" stroke-opacity=".25" stroke-width="1.6"/>
+          </g>
+          <path d="M4 64 C10 56 22 52 34 48 C40 45 56 45 62 48 C74 52 86 56 92 64" fill="none" stroke="#ffcf96" stroke-opacity=".3" stroke-width="2"/>
+          <path d="M10 62 Q24 52 38 49" fill="none" stroke="#dfe8f0" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <!-- 游惑（右，略瘦，短外套，双手插兜）：背影 -->
+        <g class="fig fig-yh" transform="translate(1232 588)">
+          <path d="M19 194 L18 292 L33 292 L37 194Z M44 194 L48 292 L63 292 L62 194Z" fill="#06080b"/>
+          <path d="M28 44 C34 41 46 41 52 44 C62 48 72 52 76 60 C79 66 79 76 78 86 L80 132 C80 142 74 146 70 146 L68 197 C56 200 24 200 12 197 L10 146 C6 146 0 142 0 132 L2 86 C1 76 1 66 4 60 C8 52 18 48 28 44Z" fill="url(#cs-fig)"/>
+          <path d="M12 186 L68 186" stroke="#1a222e" stroke-width="1.5"/>
+          <rect x="34" y="35" width="13" height="12" fill="#0b0f15"/>
+          <ellipse cx="40" cy="23" rx="14.5" ry="18" fill="#0b0f15"/>
+          <path d="M25 24 Q22 9 30 5 Q34 -2 41 1 Q47 -3 52 3 Q60 6 56 24 Q54 15 49 13 L47 9 L43 13 Q37 10 32 15 Q28 16 25 24Z" fill="#0e131b"/>
+          <path d="M25 24 Q22 9 30 5 Q34 -2 41 1 Q47 -3 52 3 Q60 6 56 24" fill="none" stroke="#ffcf96" stroke-opacity=".25" stroke-width="1.6"/>
+          <path d="M4 60 C8 52 18 48 28 44 C34 41 46 41 52 44 C62 48 72 52 76 60" fill="none" stroke="#ffcf96" stroke-opacity=".3" stroke-width="2"/>
+          <path d="M50 45 Q62 49 72 56" fill="none" stroke="#dfe8f0" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <path d="M1060 884 Q1140 864 1220 872 T1380 876 L1380 900 L1060 900Z" fill="#161e28"/>
+        <path d="M1060 884 Q1140 864 1220 872 T1380 876" fill="none" stroke="#9fb2c8" stroke-opacity=".12" stroke-width="2"/>
+      </g>
+      <rect y="0" width="1600" height="900" fill="url(#cs-haze)" opacity=".5"/>
+    </svg>
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <div class="grade" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="scanlines"></div>
+    <div class="lamp" id="lamp" hidden></div>
+    <div class="flash" id="flash"></div>
+
+    <div id="screen-title" class="overlay title-screen">
+      <!-- 开场：老式收音机 -->
+      <div class="intro-radio" aria-hidden="true">
+        <svg class="radio-svg" viewBox="0 0 320 230" role="img">
+          <defs>
+            <linearGradient id="rw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4528"/><stop offset=".55" stop-color="#3f2715"/><stop offset="1" stop-color="#24150b"/></linearGradient>
+            <linearGradient id="rbrass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9b77a"/><stop offset="1" stop-color="#6e5130"/></linearGradient>
+            <pattern id="rgrille" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#20140b"/><rect x="0" width="2.2" height="6" fill="#7a5c36" opacity=".75"/></pattern>
+            <radialGradient id="rdial" cx=".5" cy=".55" r=".7"><stop offset="0" stop-color="#ffd890"/><stop offset="1" stop-color="#b9772e"/></radialGradient>
+            <filter id="rblur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+          </defs>
+          <rect x="8" y="22" width="304" height="186" rx="30" fill="url(#rw)" stroke="#120a05" stroke-width="3"/>
+          <rect x="16" y="28" width="288" height="8" rx="4" fill="#fff" opacity=".07"/>
+          <rect x="24" y="40" width="272" height="150" rx="18" fill="#1a1009"/>
+          <rect x="38" y="54" width="122" height="122" rx="12" fill="url(#rgrille)" stroke="#5a4127" stroke-width="2"/>
+          <circle cx="99" cy="115" r="40" fill="none" stroke="#5a4127" stroke-width="1.5" opacity=".6"/>
+          <rect class="dial-glow" x="170" y="52" width="114" height="62" rx="8" fill="#ffb24a" filter="url(#rblur)" opacity=".55"/>
+          <rect x="174" y="56" width="106" height="54" rx="6" fill="url(#rdial)" stroke="#2a1a0c" stroke-width="2"/>
+          <g stroke="#3a240f" stroke-width="1">
+            <line x1="182" y1="66" x2="182" y2="74"/><line x1="195" y1="66" x2="195" y2="71"/><line x1="208" y1="66" x2="208" y2="74"/><line x1="221" y1="66" x2="221" y2="71"/><line x1="234" y1="66" x2="234" y2="74"/><line x1="247" y1="66" x2="247" y2="71"/><line x1="260" y1="66" x2="260" y2="74"/><line x1="272" y1="66" x2="272" y2="71"/>
+          </g>
+          <g font-family="Georgia,serif" font-size="8" fill="#3a240f" text-anchor="middle"><text x="182" y="86">55</text><text x="208" y="86">70</text><text x="234" y="86">90</text><text x="260" y="86">120</text></g>
+          <text x="227" y="102" font-family="Georgia,serif" font-size="7" fill="#5a3a18" text-anchor="middle" letter-spacing="2">MW · 1730</text>
+          <line class="needle" x1="226" y1="58" x2="226" y2="108" stroke="#b3241e" stroke-width="2.2"/>
+          <circle class="r-led" cx="227" cy="128" r="3.2" fill="#74e0a0"/>
+          <g class="knob"><circle cx="198" cy="160" r="17" fill="url(#rbrass)" stroke="#2a1a0c" stroke-width="2"/><circle cx="198" cy="160" r="11" fill="#2a1a0c"/><line x1="198" y1="160" x2="198" y2="149" stroke="#d9b77a" stroke-width="2"/></g>
+          <g class="knob k2"><circle cx="256" cy="160" r="17" fill="url(#rbrass)" stroke="#2a1a0c" stroke-width="2"/><circle cx="256" cy="160" r="11" fill="#2a1a0c"/><line x1="256" y1="160" x2="265" y2="153" stroke="#d9b77a" stroke-width="2"/></g>
+          <rect x="40" y="206" width="34" height="10" rx="3" fill="#1a0f07"/><rect x="246" y="206" width="34" height="10" rx="3" fill="#1a0f07"/>
+        </svg>
+        <div class="intro-cap"><span id="intro-cap"></span><i class="caret"></i></div>
+      </div>
+
+      <div class="title-wrap">
+        <div class="kicker">GLOBAL HIGH-RISK UNIFIED EXAMINATION</div>
+        <div class="title-row">
+          <h1 class="title-main" data-text="全球高考">全球高考</h1>
+          <div class="title-seal" aria-hidden="true"><span>真身</span><span>入场</span></div>
+        </div>
+        <div class="sub">全球大型高危险性统一考试 · 同人互动</div>
+        <div class="tickets">
+          <button class="tk" id="btn-new"><span class="tk-stub">No.<b>01</b></span><span class="tk-body"><span class="tk-label">领取准考证</span><span class="tk-en">ADMISSION TICKET</span></span><span class="tk-stamp">准考</span></button>
+          <button class="tk" id="btn-cont"><span class="tk-stub">No.<b>02</b></span><span class="tk-body"><span class="tk-label">继续考试</span><span class="tk-en">RESUME EXAM</span></span><span class="tk-stamp">续考</span></button>
+          <button class="tk" id="btn-rules"><span class="tk-stub">No.<b>03</b></span><span class="tk-body"><span class="tk-label">考试条例</span><span class="tk-en">REGULATIONS</span></span><span class="tk-stamp">已阅</span></button>
+        </div>
+        <p class="endings" id="endings"></p>
+        <p class="disclaimer">本作为向木苏里《全球高考》致敬的非商业同人互动。角色、考场、条例与名台词均挂钩原著。不及格者将从系统中移除。</p>
+      </div>
+
+      <div class="cover-tools">
+        <button class="cover-tool" id="btn-replay" title="重播开场广播">重听广播</button>
+        <button class="cover-tool sound-toggle" aria-pressed="false" title="环境音（默认静音）">声音：关</button>
+      </div>
+      <div class="intro-skip" aria-hidden="true">点击任意处 / 按任意键跳过</div>
+    </div>
+
+    <div id="screen-ticket" class="overlay hidden">
+      <div class="ticket">
+        <h2>准　考　证</h2>
+        <div class="row"><span>考试名称</span><span>全球大型高危险性统一考试</span></div>
+        <div class="row"><span>考生姓名</span><input id="name-in" maxlength="8" placeholder="填写真实姓名" /></div>
+        <div class="row"><span>准考证号</span><span id="ticket-no">——</span></div>
+        <div class="row"><span>身份</span><span>考生 · 真身入场</span></div>
+        <div class="row"><span>科目安排</span><span>物理 / 外语 / 历史</span></div>
+        <div class="seal">准考</div>
+        <div class="btns" style="margin-top:22px">
+          <button class="btn red" id="btn-enter">确认入场</button>
+          <button class="btn ghost dark" id="btn-back">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud" class="hud hidden">
+      <span class="brand">GLOBAL EXAM</span>
+      <span>准考证 <b id="h-ticket">—</b></span>
+      <span>考生 <b id="h-name">—</b></span>
+      <span>分数 <b id="h-score">0</b></span>
+      <span>违规 <b id="h-viol">0</b></span>
+      <span>状态 <b id="h-hp">100</b></span>
+      <span class="clock" id="h-clock">北京时间 --:--</span>
+      <span class="hud-btns">
+        <button class="hud-btn sound-toggle" id="btn-sound" aria-pressed="false" title="环境音（默认静音）">声音：关</button>
+        <button class="hud-btn side-toggle" id="btn-side" title="考生档案">档案</button>
+        <button class="hud-btn" id="btn-menu" title="返回封面（已自动存档）">封面</button>
+      </span>
+    </div>
+
+    <div id="screen-game" class="hidden">
+      <div class="stage">
+        <div class="loc" id="loc"></div>
+        <div class="radio" id="radio"></div>
+        <div class="art" id="art"></div>
+        <div class="who" id="who"></div>
+        <div class="text" id="text" aria-live="polite"></div>
+      </div>
+      <div class="choices" id="choices"></div>
+      <aside class="side">
+        <div>
+          <h3>考生档案</h3>
+          <div class="card">
+            <div>科目 <b id="s-subj">—</b></div>
+            <div>考场 <b id="s-exam">—</b></div>
+            <div>身体状态</div>
+            <div class="bar"><i id="hp-bar" style="width:100%"></i></div>
+            <div class="tags" id="tags"></div>
+          </div>
+        </div>
+        <div>
+          <h3>物资 / 卡片</h3>
+          <div class="card" id="inv">无</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+          <h3>系统记录</h3>
+          <div class="log" id="log"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="stamp" class="stamp-big hidden"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+      <div class="modal-box">
+        <div class="modal-head">系统提示</div>
+        <p id="modal-msg"></p>
+        <div class="btns" id="modal-btns"></div>
+      </div>
+    </div>
+  </div>
+  <script src="scenes_part1.js"></script>
+  <script src="scenes_part2.js"></script>
+  <script src="scenes_part3.js"></script>
+  <script src="fx.js"></script>
+  <script src="game.js"></script>
+  <script src="cover.js"></script>
+</body>
+</html>
