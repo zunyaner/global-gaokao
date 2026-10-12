@@ -14,20 +14,20 @@
   <meta property="og:site_name" content="全球高考 · 同人互动" />
   <meta property="og:title" content="全球高考 · 全球大型高危险性统一考试" />
   <meta property="og:description" content="现在是北京时间十七时三十分。考场 003712，科目：物理。不及格者，将从系统中移除。" />
-  <meta property="og:image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <meta property="og:image" content="https://zunyaner.github.io/global-gaokao/assets/og-cover.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:url" content="https://zunyaner.github.io/global-gaokao/" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="全球高考 · 全球大型高危险性统一考试" />
-  <meta name="twitter:image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <meta name="twitter:image" content="https://zunyaner.github.io/global-gaokao/assets/og-cover.png" />
   <meta itemprop="name" content="全球高考 · 同人互动" />
-  <meta itemprop="image" content="https://zunyaner.github.io/global-gaokao/og-cover.png" />
+  <meta itemprop="image" content="https://zunyaner.github.io/global-gaokao/assets/og-cover.png" />
   <title>全球高考 · 全球大型高危险性统一考试</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="app" data-bg="cover">
@@ -308,18 +308,27 @@
       </div>
     </div>
   </div>
-  <script src="scenes_part1.js"></script>
-  <script src="scenes_part2.js"></script>
-  <script src="scenes_part3.js"></script>
-  <script src="scenes_part4.js"></script>
-  <script src="scenes_part5.js"></script>
-  <script src="scenes_part6.js"></script>
-  <script src="scenes_part7.js"></script>
-  <script src="chapters.js"></script>
-  <script src="art.js"></script>
-  <script src="audio.js"></script>
-  <script src="fx.js"></script>
-  <script src="game.js"></script>
-  <script src="cover.js"></script>
+  <!-- 引擎：剧情注册表 + 声明式剧情解释器（须先于剧情数据加载） -->
+  <script src="js/registry.js"></script>
+  <script src="js/story.js"></script>
+  <!-- 剧情数据：纯数据文件，按章节分文件（格式见 scenes/README.md） -->
+  <script src="scenes/prologue.js"></script>
+  <script src="scenes/physics.js"></script>
+  <script src="scenes/rest-areas.js"></script>
+  <script src="scenes/foreign-language.js"></script>
+  <script src="scenes/history.js"></script>
+  <script src="scenes/cleanup-politics.js"></script>
+  <script src="scenes/castle.js"></script>
+  <script src="scenes/math.js"></script>
+  <script src="scenes/finale.js"></script>
+  <script src="scenes/endings.js"></script>
+  <!-- 表现层与逻辑 -->
+  <script src="js/chapters.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/cover.js"></script>
 </body>
 </html>

@@ -7,6 +7,8 @@
   const ART = window.QQART || { portrait: () => "", faceFor: () => null, people: {} };
   const SND = window.QQAUDIO || { ui() {}, heartbeat() {} };
   const CHM = window.QQCH || { chapterOf: () => null };
+  const STORY = window.GKStory;                 // 声明式剧情解释器（js/story.js）
+  const shopOf = (ref) => window.GK.shopOf(ref);
   const READ_KEY = "qqgk-read";
   const SET_KEY = "qqgk-settings";
   const UNDO_MAX = 30;
@@ -47,7 +49,7 @@
   };
 
   let typing = false, skipType = false, typeToken = 0, timer = null, choiceMap = [];
-  let stampTimer = null, toastTimer = null, hurt = false;
+  let stampTimer = null, hurt = false;
   const FX = window.QQFX || { setScene() {}, shake() {}, resize() {} };
 
   /* ---------- 存档 ---------- */
@@ -84,34 +86,8 @@
     store.set(END_KEY, JSON.stringify(got));
   }
 
-  /* ---------- 页内提示（不使用浏览器弹窗） ---------- */
-  function toast(msg) {
-    const t = $("#toast");
-    t.textContent = msg;
-    t.classList.add("on");
-    SND.ui("notice");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove("on"), 2200);
-  }
-  function modal(msg, buttons) {
-    const m = $("#modal");
-    $("#modal-msg").textContent = msg;
-    const box = $("#modal-btns");
-    box.innerHTML = "";
-    buttons.forEach((b, i) => {
-      const el = document.createElement("button");
-      el.className = "btn" + (b.ghost ? " ghost" : "");
-      el.textContent = b.text;
-      el.onclick = () => { closeModal(); b.act && b.act(); };
-      box.appendChild(el);
-      if (i === 0) setTimeout(() => el.focus(), 0);
-    });
-    m.classList.remove("hidden");
-  }
-  function closeModal() { $("#modal").classList.add("hidden"); }
-  const modalOpen = () => !$("#modal").classList.contains("hidden");
-
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  /* 页内提示 / 弹层 / 转义见 js/ui.js（不使用浏览器弹窗） */
+  const { toast, modal, closeModal, modalOpen, esc } = window.GKUI;
 
   function log(msg) {
     state.log.unshift(msg);
@@ -235,24 +211,8 @@
 
   function vis(id, on) { $(id).classList.toggle("hidden", !on); }
 
-  function cond(c) {
-    if (!c) return true;
-    if (c.flag && !state.flags[c.flag]) return false;
-    if (c.noflag && state.flags[c.noflag]) return false;
-    if (c.minYh != null && state.yh < c.minYh) return false;
-    if (c.minQj != null && state.qj < c.minQj) return false;
-    if (c.has && !state.inv.includes(c.has)) return false;
-    if (c.full && !state.flags.fullInvig) return false;
-    if (c.any && !c.any.some((f) => state.flags[f])) return false;
-    if (c.none && c.none.some((f) => state.flags[f])) return false;
-    if (c.minScore != null && state.score < c.minScore) return false;
-    if (c.maxHp != null && state.hp > c.maxHp) return false;
-    if (c.minViol != null && state.viol < c.minViol) return false;
-    if (c.maxViol != null && state.viol > c.maxViol) return false;
-    if (c.or && !c.or.some(cond)) return false;
-    if (c.minHints != null && (state.hints || 0) < c.minHints) return false;
-    return true;
-  }
+  /* 条件对象的语义见 js/story.js */
+  const cond = (c) => STORY.cond(c, state);
 
   function renderArt(sc) {
     const art = $("#art");
@@ -291,13 +251,13 @@
     if (sc.art === "paper") {
       const d = document.createElement("div");
       d.className = "paper-q";
-      d.textContent = typeof sc.paper === "function" ? sc.paper(state) : sc.paper;
+      d.textContent = STORY.text(sc.paper, state);
       art.appendChild(d);
     }
     if (sc.art === "svg") {
       const d = document.createElement("div");
       d.className = "svg-q";
-      d.innerHTML = typeof sc.svg === "function" ? sc.svg(state) : sc.svg;
+      d.innerHTML = sc.svg;
       art.appendChild(d);
     }
     if (sc.art === "shop") {
@@ -305,7 +265,7 @@
       wrap.className = "shop";
       const rows = [];
       const refresh = () => rows.forEach((r) => r());
-      sc.shop.forEach((it) => {
+      shopOf(sc.shop).forEach((it) => {
         const row = document.createElement("div");
         row.className = "shop-item";
         const left = document.createElement("span");
@@ -495,7 +455,7 @@
     const changed = state.scene !== id;
     if (!sc.nosave) state.scene = id;
     if (sc.fx && !resume) apply(sc.fx);      // 读档续考时不重复结算场景效果
-    if (sc.enter) sc.enter(state);
+    STORY.runEnter(sc.enter, state, apply);   // 声明式入场钩子（幂等，读档时也执行）
     /* 科目 / 考场始终由场景所属章节推导（读档、回退、任何入口都一致） */
     const ch = sc.nosave ? null : CHM.chapterOf(id, sc);
     let card = null;
@@ -530,14 +490,14 @@
     stage.classList.add("fade");
     stage.scrollTop = 0;
     $("#loc").textContent = sc.loc || "";
-    $("#radio").textContent = typeof sc.radio === "function" ? sc.radio(state) : (sc.radio || "");
+    $("#radio").textContent = STORY.text(sc.radio, state);
     renderWho(sc);
     $("#hintbox").hidden = true;
     if (state.flags["hint:" + id]) showHint(sc);
     renderArt(sc);
     renderHud();
     $("#choices").innerHTML = "";
-    const txt = typeof sc.text === "function" ? sc.text(state) : sc.text;
+    const txt = STORY.text(sc.text, state);
     const wasRead = readSet.has(id);
     const fast = settings.skip && wasRead;
     if (settings.skip && !wasRead && !sc.ending) setSkip(false, "未读内容 · 快进已停止");
